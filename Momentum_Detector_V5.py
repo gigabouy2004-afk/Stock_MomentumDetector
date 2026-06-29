@@ -20,6 +20,13 @@ MIN_HISTORY_BARS = 300
 MIN_MOMENTUM_SCORE = 70
 EXTENDED_HOURS_WAIT_DROP_PCT = -2.0
 EXTENDED_HOURS_REJECT_DROP_PCT = -5.0
+DAILY_PULLBACK_DEEP_20D_HIGH_PCT = -8.0
+DAILY_PULLBACK_EARLY_20D_HIGH_PCT = -5.0
+DAILY_PULLBACK_5D_RETURN_PCT = -3.0
+DAILY_DISTRIBUTION_DROP_PCT = -3.0
+HIGH_VOLUME_PULLBACK_MAX_GAIN_PCT = 0.5
+INTRADAY_SELLING_3H_RETURN_PCT = -1.0
+BEARISH_HOURLY_CANDLES_CONFIRMATION = 2
 
 STATUS_SORT_RANK = {
     "Momentum Candidate": 0,
@@ -336,20 +343,34 @@ def evaluate_intraday_timing(daily_df, hourly_df, quote=None):
 
     daily_pullback = (
         latest["Close_Below_EMA20"]
-        and latest["Distance_From_20D_High_Pct"] <= -8
-        and latest["Return_5D_Pct"] <= -3
+        and latest["Distance_From_20D_High_Pct"] <= DAILY_PULLBACK_DEEP_20D_HIGH_PCT
+        and latest["Return_5D_Pct"] <= DAILY_PULLBACK_5D_RETURN_PCT
     )
     lower_high_low = bool(latest["Lower_High_Day"] and latest["Lower_Low_Day"])
-    high_volume_pullback = bool(latest["Volume"] > latest["Volume_Avg_50"] and latest["Daily_Change_Pct"] <= 0.5)
+    high_volume_pullback = bool(latest["Volume"] > latest["Volume_Avg_50"] and latest["Daily_Change_Pct"] <= HIGH_VOLUME_PULLBACK_MAX_GAIN_PCT)
+    daily_drop = latest["Daily_Change_Pct"]
+    daily_distribution = bool(pd.notna(daily_drop) and daily_drop <= DAILY_DISTRIBUTION_DROP_PCT)
+    early_pullback = (
+        latest["Close_Below_EMA20"]
+        and latest["Distance_From_20D_High_Pct"] <= DAILY_PULLBACK_EARLY_20D_HIGH_PCT
+        and latest["Return_5D_Pct"] <= DAILY_PULLBACK_5D_RETURN_PCT
+    )
+    daily_trend_break = latest["Close_Below_EMA20"] and daily_distribution and (lower_high_low or high_volume_pullback)
 
     if daily_pullback:
         append_reason(reasons, "below EMA20 with deep 20D-high pullback")
+    if early_pullback and not daily_pullback:
+        append_reason(reasons, "below EMA20 with early 20D-high pullback")
     if lower_high_low:
         append_reason(reasons, "lower high and lower low")
     if high_volume_pullback:
         append_reason(reasons, "pullback on above-average volume")
+    if daily_distribution:
+        append_reason(reasons, "daily distribution")
+    if daily_trend_break:
+        append_reason(reasons, "daily distribution below EMA20")
 
-    if result["status"] == "Clean" and daily_pullback and (lower_high_low or high_volume_pullback):
+    if result["status"] == "Clean" and ((daily_pullback and (lower_high_low or high_volume_pullback)) or daily_trend_break):
         result["status"] = "Wait - Daily Pullback Risk"
 
     if hourly_df.empty or len(hourly_df) < 3:
@@ -363,19 +384,16 @@ def evaluate_intraday_timing(daily_df, hourly_df, quote=None):
     result["bearish_1h_candles_last3"] = int((last_3h["Close"] < last_3h["Open"]).sum())
     result["last_1h_bearish"] = bool(last_3h["Close"].iloc[-1] < last_3h["Open"].iloc[-1])
 
-    daily_drop = latest["Daily_Change_Pct"]
-    if pd.notna(daily_drop) and daily_drop <= -3:
-        append_reason(reasons, "daily distribution")
-    if result["last_3h_return_pct"] <= -1:
+    if result["last_3h_return_pct"] <= INTRADAY_SELLING_3H_RETURN_PCT:
         append_reason(reasons, "last 3H selling")
-    if result["bearish_1h_candles_last3"] >= 2:
+    if result["bearish_1h_candles_last3"] >= BEARISH_HOURLY_CANDLES_CONFIRMATION:
         append_reason(reasons, "2+ bearish hourly candles")
     if result["last_1h_bearish"]:
         append_reason(reasons, "last 1H bearish")
 
-    if result["status"] != "Rejected - Extended Hours Breakdown" and "daily distribution" in reasons and result["bearish_1h_candles_last3"] >= 2:
+    if result["status"] != "Rejected - Extended Hours Breakdown" and daily_distribution and result["bearish_1h_candles_last3"] >= BEARISH_HOURLY_CANDLES_CONFIRMATION:
         result["status"] = "Failed - Distribution Risk"
-    elif result["status"] == "Clean" and result["last_3h_return_pct"] <= -1 and result["bearish_1h_candles_last3"] >= 2:
+    elif result["status"] == "Clean" and result["last_3h_return_pct"] <= INTRADAY_SELLING_3H_RETURN_PCT and result["bearish_1h_candles_last3"] >= BEARISH_HOURLY_CANDLES_CONFIRMATION:
         result["status"] = "Wait - Intraday Selling"
     elif result["status"] == "Clean" and result["last_1h_bearish"]:
         result["status"] = "Wait - Last Hour Bearish"
