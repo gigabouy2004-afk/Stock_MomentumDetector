@@ -213,3 +213,18 @@ The current evidence suggests the immediate issue was output usability, not nece
 Suggested next discussion point:
 
 Should `Entry_Timing_Status` be purely an action-timing warning, or should it be allowed to materially change `Long_Term_Status`?
+
+## Actionable Backlog
+
+Do not implement while a scan is actively running.
+
+Next output usability enhancement:
+
+- Add a summary block at the top of the generated output before individual ticker assessment rows.
+- Summary should include execution timestamp, ticker input source, total codes processed, count by `Action_Rank`, count by `Action_Status`, output file location, and any fallback output filename used because the default path was not writable.
+- Individual ticker assessment rows should remain below the summary block.
+- CSV/Excel consumer workflow should remain: sort/read by `Action_Rank` and act on `Action_Status`.
+
+Open design detail:
+
+- For plain CSV, a top summary block creates a mixed-layout file that is easier for humans but less clean for automated CSV parsing. Before implementation, decide whether to use one workbook with separate sheets for Excel output, or keep CSV machine-clean and generate a separate summary file.
