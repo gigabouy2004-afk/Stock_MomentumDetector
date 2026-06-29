@@ -34,8 +34,16 @@ ENTRY_TIMING_SORT_RANK = {
     "Insufficient history": 4,
 }
 
+ACTION_STATUS_RANK = {
+    "Actionable Momentum Candidate": 1,
+    "Watchlist Candidate": 2,
+    "Downgraded - Wait": 3,
+    "Rejected - Distribution Risk": 4,
+    "Avoid": 5,
+}
+
 CSV_FIELDS = [
-    "Ticker", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
+    "Ticker", "Action_Rank", "Action_Status", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
     "Close", "Score", "Trend_Score", "Relative_Strength_Score", "Breakout_Score",
     "Accumulation_Score", "Volatility_Score", "Weekly_Stage_Score",
     "Weekly_Stage", "Weekly_Close", "Weekly_SMA_30", "Weekly_SMA_30_Slope_Pct_10W",
@@ -72,6 +80,7 @@ def sort_output_rows(rows):
     return sorted(
         rows,
         key=lambda row: (
+            int(to_float(row.get("Action_Rank")) or 99),
             STATUS_SORT_RANK.get(row.get("Long_Term_Status"), 99),
             ENTRY_TIMING_SORT_RANK.get(row.get("Entry_Timing_Status"), 99),
             -to_float(row.get("Score")),
@@ -87,13 +96,16 @@ def timestamped_output_path(path):
     return f"{base}_{timestamp}{ext}"
 
 
-def write_execution_log(rows):
+def write_execution_log(rows, output_path=EXECUTION_LOG_CSV):
     sorted_rows = sort_output_rows(rows)
-    output_path = EXECUTION_LOG_CSV
+    output_path = os.path.abspath(output_path)
+    output_dir = os.path.dirname(output_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     try:
         file = open(output_path, "w", encoding="utf-8", newline="")
     except OSError:
-        output_path = timestamped_output_path(EXECUTION_LOG_CSV)
+        output_path = timestamped_output_path(output_path)
         file = open(output_path, "w", encoding="utf-8", newline="")
 
     with file:
@@ -103,6 +115,44 @@ def write_execution_log(rows):
             writer.writerow({field: clean_number(row.get(field, "")) for field in CSV_FIELDS})
 
     return output_path, sorted_rows
+
+
+def parse_ticker_values(values):
+    tickers = []
+    for value in values or []:
+        tickers.extend(part.strip() for part in str(value).split(","))
+    return [ticker for ticker in tickers if ticker]
+
+
+def resolve_action_status(long_term_status, entry_timing_status):
+    if long_term_status == "Momentum Candidate" and entry_timing_status == "Clean":
+        action_status = "Actionable Momentum Candidate"
+    elif long_term_status == "Momentum Candidate":
+        if entry_timing_status == "Failed - Distribution Risk":
+            action_status = "Rejected - Distribution Risk"
+        else:
+            action_status = "Downgraded - Wait"
+    elif long_term_status == "Watchlist Candidate" and entry_timing_status == "Clean":
+        action_status = "Watchlist Candidate"
+    elif entry_timing_status == "Failed - Distribution Risk":
+        action_status = "Rejected - Distribution Risk"
+    elif long_term_status == "Watchlist Candidate":
+        action_status = "Downgraded - Wait"
+    else:
+        action_status = "Avoid"
+    return ACTION_STATUS_RANK[action_status], action_status
+
+
+def build_status_row(ticker, long_term_status, entry_timing_status, reason=""):
+    action_rank, action_status = resolve_action_status(long_term_status, entry_timing_status)
+    return {
+        "Ticker": ticker,
+        "Action_Rank": action_rank,
+        "Action_Status": action_status,
+        "Long_Term_Status": long_term_status,
+        "Entry_Timing_Status": entry_timing_status,
+        "Classification_Reason": reason,
+    }
 
 
 def normalize_index(df):
@@ -373,8 +423,11 @@ def classify_signal(row, scores, stage, timing):
 
 
 def build_output_row(ticker, row, scores, stage, timing, long_term_status, reason):
+    action_rank, action_status = resolve_action_status(long_term_status, timing["status"])
     output = {
         "Ticker": ticker,
+        "Action_Rank": action_rank,
+        "Action_Status": action_status,
         "Long_Term_Status": long_term_status,
         "Entry_Timing_Status": timing["status"],
         "Classification_Reason": reason,
@@ -396,23 +449,33 @@ def build_output_row(ticker, row, scores, stage, timing, long_term_status, reaso
     return {field: clean_number(output.get(field, "")) for field in CSV_FIELDS}
 
 
-def load_tickers():
-    if not os.path.exists(TICKER_INPUT_CSV):
+def load_tickers(ticker_csv=TICKER_INPUT_CSV):
+    if not os.path.exists(ticker_csv):
         return []
-    tickers_df = pd.read_csv(TICKER_INPUT_CSV)
+    tickers_df = pd.read_csv(ticker_csv)
     ticker_col = "Ticker" if "Ticker" in tickers_df.columns else "Symbol" if "Symbol" in tickers_df.columns else tickers_df.columns[0]
     return tickers_df[ticker_col].dropna().tolist()
 
 
+def resolve_tickers(cli_tickers, ticker_csv):
+    tickers = parse_ticker_values(cli_tickers)
+    if tickers:
+        return tickers, "CLI ticker list"
+    input_csv = Path(ticker_csv) if ticker_csv else TICKER_INPUT_CSV
+    return load_tickers(input_csv), str(input_csv)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Momentum Detector V5 - Stage/RS/Breakout Momentum Engine")
-    parser.add_argument("--tickers", nargs="*", default=[])
+    parser.add_argument("--tickers", nargs="*", default=[], help="Ticker list. Accepts space-separated and/or comma-separated values, e.g. AAPL MSFT or AAPL,MSFT.")
+    parser.add_argument("--ticker-csv", default=None, help="CSV file containing ticker codes. Used when --tickers is not supplied.")
+    parser.add_argument("--output", default=EXECUTION_LOG_CSV, help="Fully qualified output CSV path. Defaults to EXECUTION_LOG_CSV.")
     args = parser.parse_args()
 
-    tickers = args.tickers if args.tickers else load_tickers()
+    tickers, ticker_source = resolve_tickers(args.tickers, args.ticker_csv)
     tickers = sorted([normalize_ticker(t) for t in tickers if str(t).strip()])
     if not tickers:
-        print("No tickers supplied and seed file not available.")
+        print("No tickers supplied and ticker CSV not available.")
         return
 
     benchmark_df = fetch_daily_data(BENCHMARK_TICKER, LOOKBACK_WINDOW)
@@ -421,13 +484,15 @@ def main():
     watchlist = []
 
     print("Starting Momentum Detector V5 scan...")
+    print(f"Ticker Source: {ticker_source}")
+    print(f"Output Target: {args.output}")
     for ticker in tickers:
         print(f"Processing {ticker}...")
         time.sleep(API_DELAY_SECONDS)
         try:
             df = fetch_daily_data(ticker, LOOKBACK_WINDOW)
             if df.empty or len(df) < MIN_HISTORY_BARS:
-                rows.append({"Ticker": ticker, "Long_Term_Status": "Avoid", "Entry_Timing_Status": "Insufficient history"})
+                rows.append(build_status_row(ticker, "Avoid", "Insufficient history"))
                 continue
             calc_df = calculate_v5_indicators(df, benchmark_df)
             timing = evaluate_intraday_timing(calc_df, fetch_hourly_data(ticker))
@@ -441,16 +506,15 @@ def main():
             elif long_term_status in ["Momentum Candidate", "Watchlist Candidate"]:
                 watchlist.append(output)
         except Exception as exc:
-            rows.append({"Ticker": ticker, "Long_Term_Status": "Avoid", "Entry_Timing_Status": f"Error: {exc}"})
+            rows.append(build_status_row(ticker, "Avoid", f"Error: {exc}", str(exc)))
 
-    output_path, sorted_rows = write_execution_log(rows)
+    output_path, sorted_rows = write_execution_log(rows, args.output)
 
-    candidates = [row for row in sorted_rows if row["Long_Term_Status"] == "Momentum Candidate" and row["Entry_Timing_Status"] == "Clean"]
+    candidates = [row for row in sorted_rows if row["Action_Status"] == "Actionable Momentum Candidate"]
     watchlist = [
         row
         for row in sorted_rows
-        if row["Long_Term_Status"] in ["Momentum Candidate", "Watchlist Candidate"]
-        and not (row["Long_Term_Status"] == "Momentum Candidate" and row["Entry_Timing_Status"] == "Clean")
+        if row["Action_Status"] in ["Watchlist Candidate", "Downgraded - Wait", "Rejected - Distribution Risk"]
     ]
     print("============================================================")
     print("=== MOMENTUM DETECTOR V5 COMPLETE ===")
@@ -459,11 +523,11 @@ def main():
     print(f"Clean Candidates: {len(candidates)}")
     print(f"Watchlist/Wait  : {len(watchlist)}")
     for i, row in enumerate(candidates, 1):
-        print(f"{i}. {row['Ticker']:<8} | {row['Long_Term_Status']:<20} | Score: {row['Score']}/100 | Entry: {row['Entry_Timing_Status']}")
+        print(f"{i}. {row['Ticker']:<8} | {row['Action_Status']:<30} | Score: {row['Score']}/100 | Entry: {row['Entry_Timing_Status']}")
     if watchlist:
         print("Watchlist / wait-for-entry names:")
         for i, row in enumerate(watchlist, 1):
-            print(f"{i}. {row['Ticker']:<8} | {row['Long_Term_Status']:<20} | Score: {row['Score']}/100 | Entry: {row['Entry_Timing_Status']}")
+            print(f"{i}. {row['Ticker']:<8} | {row['Action_Status']:<30} | Score: {row['Score']}/100 | Entry: {row['Entry_Timing_Status']}")
     print(f"-> Output: {output_path}")
 
 

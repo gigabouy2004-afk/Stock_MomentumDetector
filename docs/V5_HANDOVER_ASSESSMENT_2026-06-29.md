@@ -16,28 +16,68 @@ No additional detector logic changes should be made until confirmed. The last im
 
 The primary columns to review first are:
 
-1. `Long_Term_Status`
-2. `Entry_Timing_Status`
-3. `Score`
-4. `Trend_Score`
+1. `Action_Rank`
+2. `Action_Status`
+3. `Long_Term_Status`
+4. `Entry_Timing_Status`
+5. `Score`
+6. `Trend_Score`
 
 Recommended interpretation:
 
-- `Long_Term_Status` is the main decision bucket.
-- `Entry_Timing_Status` tells whether the candidate is actionable now or should wait.
+- `Action_Rank` is the main sort column for CSV/Excel consumers.
+- `Action_Status` is the final offline action/decision column.
+- `Long_Term_Status` is the supporting structural engine verdict.
+- `Entry_Timing_Status` is the supporting timing/risk status.
 - `Score` is the overall V5 score.
 - `Trend_Score` helps confirm whether the price structure is actually strong.
 
-The CSV is now sorted as one full unit using that priority:
+The CSV is now sorted as one full unit using this priority:
 
-1. `Momentum Candidate`
-2. `Watchlist Candidate`
-3. `Extended / Exhaustion Risk`
-4. `Avoid`
-5. Cleaner entry timing
-6. Higher `Score`
-7. Higher `Trend_Score`
-8. `Ticker` as a stable tie-breaker
+1. Lower `Action_Rank`
+2. Stronger `Long_Term_Status`
+3. Cleaner `Entry_Timing_Status`
+4. Higher `Score`
+5. Higher `Trend_Score`
+6. `Ticker` as a stable tie-breaker
+
+Action interpretation:
+
+| Action_Rank | Action_Status | Meaning |
+|---:|---|---|
+| 1 | Actionable Momentum Candidate | Strong and clean enough for action consideration |
+| 2 | Watchlist Candidate | Structurally interesting, but not top-tier action |
+| 3 | Downgraded - Wait | Interesting, but current timing/risk requires waiting |
+| 4 | Rejected - Distribution Risk | Do not act due to selling/distribution risk |
+| 5 | Avoid | Ignore for current action |
+
+Any non-clean timing risk is intentionally downgraded in `Action_Status`.
+
+## Execution Options
+
+The script is self-sufficient on every run. It does not require post-processing.
+
+Default execution uses the configured `TICKER_INPUT_CSV` and `EXECUTION_LOG_CSV` values.
+
+CLI ticker list:
+
+```powershell
+python Momentum_Detector_V5.py --tickers AAPL,MSFT,NVDA
+```
+
+CLI ticker CSV override:
+
+```powershell
+python Momentum_Detector_V5.py --ticker-csv D:\path\to\tickers.csv
+```
+
+CLI output file override:
+
+```powershell
+python Momentum_Detector_V5.py --tickers AAPL,MSFT --output D:\path\to\output.csv
+```
+
+If the target output file is not writable, the script writes a timestamped fallback file beside the requested path.
 
 ## Latest Output Summary
 
