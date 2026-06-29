@@ -11,13 +11,28 @@ import yfinance as yf
 
 BASE_FOLDER = "D:/Tools/Stock_MomentumDetector"
 EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, "V5_Momentum_Execution_Dump.csv")
-TICKER_INPUT_CSV = Path("D:/Tools/StockCodeMaster/02_Stock/24-06-US_Common_Stocks_Master_Library-Industry_Semiconductor.csv")
+TICKER_INPUT_CSV = Path("D:/Tools/StockCodeMaster/02_Stock/24-06-US_Common_Stocks_Master_Library-Sector-Technology.csv")
 
 LOOKBACK_WINDOW = "5y"
 BENCHMARK_TICKER = "SPY"
 API_DELAY_SECONDS = 1.0
 MIN_HISTORY_BARS = 300
 MIN_MOMENTUM_SCORE = 70
+
+STATUS_SORT_RANK = {
+    "Momentum Candidate": 0,
+    "Watchlist Candidate": 1,
+    "Extended / Exhaustion Risk": 2,
+    "Avoid": 3,
+}
+
+ENTRY_TIMING_SORT_RANK = {
+    "Clean": 0,
+    "Wait - Intraday Selling": 1,
+    "Wait - Daily Pullback Risk": 2,
+    "Failed - Distribution Risk": 3,
+    "Insufficient history": 4,
+}
 
 CSV_FIELDS = [
     "Ticker", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
@@ -42,6 +57,52 @@ def clean_number(value):
     if isinstance(value, (int, float)) and not math.isfinite(value):
         return ""
     return value
+
+
+def to_float(value):
+    try:
+        if value == "":
+            return 0.0
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def sort_output_rows(rows):
+    return sorted(
+        rows,
+        key=lambda row: (
+            STATUS_SORT_RANK.get(row.get("Long_Term_Status"), 99),
+            ENTRY_TIMING_SORT_RANK.get(row.get("Entry_Timing_Status"), 99),
+            -to_float(row.get("Score")),
+            -to_float(row.get("Trend_Score")),
+            str(row.get("Ticker", "")),
+        ),
+    )
+
+
+def timestamped_output_path(path):
+    base, ext = os.path.splitext(path)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{base}_{timestamp}{ext}"
+
+
+def write_execution_log(rows):
+    sorted_rows = sort_output_rows(rows)
+    output_path = EXECUTION_LOG_CSV
+    try:
+        file = open(output_path, "w", encoding="utf-8", newline="")
+    except OSError:
+        output_path = timestamped_output_path(EXECUTION_LOG_CSV)
+        file = open(output_path, "w", encoding="utf-8", newline="")
+
+    with file:
+        writer = csv.DictWriter(file, fieldnames=CSV_FIELDS)
+        writer.writeheader()
+        for row in sorted_rows:
+            writer.writerow({field: clean_number(row.get(field, "")) for field in CSV_FIELDS})
+
+    return output_path, sorted_rows
 
 
 def normalize_index(df):
@@ -382,13 +443,15 @@ def main():
         except Exception as exc:
             rows.append({"Ticker": ticker, "Long_Term_Status": "Avoid", "Entry_Timing_Status": f"Error: {exc}"})
 
-    with open(EXECUTION_LOG_CSV, "w", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=CSV_FIELDS)
-        writer.writeheader()
-        for row in rows:
-            writer.writerow({field: clean_number(row.get(field, "")) for field in CSV_FIELDS})
+    output_path, sorted_rows = write_execution_log(rows)
 
-    candidates.sort(key=lambda r: float(r["Score"] or 0), reverse=True)
+    candidates = [row for row in sorted_rows if row["Long_Term_Status"] == "Momentum Candidate" and row["Entry_Timing_Status"] == "Clean"]
+    watchlist = [
+        row
+        for row in sorted_rows
+        if row["Long_Term_Status"] in ["Momentum Candidate", "Watchlist Candidate"]
+        and not (row["Long_Term_Status"] == "Momentum Candidate" and row["Entry_Timing_Status"] == "Clean")
+    ]
     print("============================================================")
     print("=== MOMENTUM DETECTOR V5 COMPLETE ===")
     print("============================================================")
@@ -401,7 +464,7 @@ def main():
         print("Watchlist / wait-for-entry names:")
         for i, row in enumerate(watchlist, 1):
             print(f"{i}. {row['Ticker']:<8} | {row['Long_Term_Status']:<20} | Score: {row['Score']}/100 | Entry: {row['Entry_Timing_Status']}")
-    print(f"-> Output: {EXECUTION_LOG_CSV}")
+    print(f"-> Output: {output_path}")
 
 
 if __name__ == "__main__":
