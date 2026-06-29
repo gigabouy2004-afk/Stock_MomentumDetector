@@ -18,6 +18,8 @@ BENCHMARK_TICKER = "SPY"
 API_DELAY_SECONDS = 1.0
 MIN_HISTORY_BARS = 300
 MIN_MOMENTUM_SCORE = 70
+EXTENDED_HOURS_WAIT_DROP_PCT = -2.0
+EXTENDED_HOURS_REJECT_DROP_PCT = -5.0
 
 STATUS_SORT_RANK = {
     "Momentum Candidate": 0,
@@ -28,10 +30,13 @@ STATUS_SORT_RANK = {
 
 ENTRY_TIMING_SORT_RANK = {
     "Clean": 0,
-    "Wait - Intraday Selling": 1,
-    "Wait - Daily Pullback Risk": 2,
-    "Failed - Distribution Risk": 3,
-    "Insufficient history": 4,
+    "Wait - Last Hour Bearish": 1,
+    "Wait - Intraday Selling": 2,
+    "Wait - Extended Hours Weakness": 3,
+    "Wait - Daily Pullback Risk": 4,
+    "Failed - Distribution Risk": 5,
+    "Rejected - Extended Hours Breakdown": 6,
+    "Insufficient history": 7,
 }
 
 ACTION_STATUS_RANK = {
@@ -39,12 +44,14 @@ ACTION_STATUS_RANK = {
     "Watchlist Candidate": 2,
     "Downgraded - Wait": 3,
     "Rejected - Distribution Risk": 4,
+    "Rejected - Extended Hours Breakdown": 4,
     "Avoid": 5,
 }
 
 CSV_FIELDS = [
     "Ticker", "Action_Rank", "Action_Status", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
-    "Close", "Score", "Trend_Score", "Relative_Strength_Score", "Breakout_Score",
+    "Market_State", "Live_Price", "Regular_Market_Price", "PreMarket_Price", "PostMarket_Price",
+    "Extended_Hours_Change_Pct", "Close", "Score", "Trend_Score", "Relative_Strength_Score", "Breakout_Score",
     "Accumulation_Score", "Volatility_Score", "Weekly_Stage_Score",
     "Weekly_Stage", "Weekly_Close", "Weekly_SMA_30", "Weekly_SMA_30_Slope_Pct_10W",
     "EMA_20", "EMA_50", "EMA_150", "EMA_200", "EMA_200_Slope_Pct_50D",
@@ -125,17 +132,16 @@ def parse_ticker_values(values):
 
 
 def resolve_action_status(long_term_status, entry_timing_status):
-    if long_term_status == "Momentum Candidate" and entry_timing_status == "Clean":
-        action_status = "Actionable Momentum Candidate"
-    elif long_term_status == "Momentum Candidate":
-        if entry_timing_status == "Failed - Distribution Risk":
-            action_status = "Rejected - Distribution Risk"
-        else:
-            action_status = "Downgraded - Wait"
-    elif long_term_status == "Watchlist Candidate" and entry_timing_status == "Clean":
-        action_status = "Watchlist Candidate"
+    if entry_timing_status == "Rejected - Extended Hours Breakdown":
+        action_status = "Rejected - Extended Hours Breakdown"
     elif entry_timing_status == "Failed - Distribution Risk":
         action_status = "Rejected - Distribution Risk"
+    elif long_term_status == "Momentum Candidate" and entry_timing_status == "Clean":
+        action_status = "Actionable Momentum Candidate"
+    elif long_term_status == "Momentum Candidate":
+        action_status = "Downgraded - Wait"
+    elif long_term_status == "Watchlist Candidate" and entry_timing_status == "Clean":
+        action_status = "Watchlist Candidate"
     elif long_term_status == "Watchlist Candidate":
         action_status = "Downgraded - Wait"
     else:
@@ -179,7 +185,7 @@ def fetch_daily_data(ticker, period=LOOKBACK_WINDOW):
 
 def fetch_hourly_data(ticker):
     try:
-        df = yf.Ticker(ticker).history(period="5d", interval="1h", auto_adjust=False)
+        df = yf.Ticker(ticker).history(period="5d", interval="1h", prepost=True, auto_adjust=False)
         if df.empty:
             return pd.DataFrame()
         if isinstance(df.columns, pd.MultiIndex):
@@ -187,6 +193,34 @@ def fetch_hourly_data(ticker):
         return df[["Open", "High", "Low", "Close", "Volume"]].dropna().copy()
     except Exception:
         return pd.DataFrame()
+
+
+def fetch_live_quote(ticker):
+    quote = {
+        "market_state": "",
+        "live_price": float("nan"),
+        "regular_market_price": float("nan"),
+        "pre_market_price": float("nan"),
+        "post_market_price": float("nan"),
+    }
+    try:
+        info = yf.Ticker(ticker).info
+    except Exception:
+        return quote
+
+    quote["market_state"] = info.get("marketState") or ""
+    quote["regular_market_price"] = info.get("regularMarketPrice") or info.get("currentPrice") or float("nan")
+    quote["pre_market_price"] = info.get("preMarketPrice") or float("nan")
+    quote["post_market_price"] = info.get("postMarketPrice") or float("nan")
+
+    if quote["market_state"] == "PRE" and pd.notna(quote["pre_market_price"]):
+        quote["live_price"] = quote["pre_market_price"]
+    elif quote["market_state"] in ["POST", "POSTPOST"] and pd.notna(quote["post_market_price"]):
+        quote["live_price"] = quote["post_market_price"]
+    elif pd.notna(quote["regular_market_price"]):
+        quote["live_price"] = quote["regular_market_price"]
+
+    return quote
 
 
 def ema(series, span):
@@ -262,9 +296,20 @@ def calculate_v5_indicators(df, benchmark_df):
     return df
 
 
-def evaluate_intraday_timing(daily_df, hourly_df):
+def append_reason(reasons, reason):
+    if reason and reason not in reasons:
+        reasons.append(reason)
+
+
+def evaluate_intraday_timing(daily_df, hourly_df, quote=None):
     result = {
         "status": "Clean",
+        "market_state": "",
+        "live_price": float("nan"),
+        "regular_market_price": float("nan"),
+        "pre_market_price": float("nan"),
+        "post_market_price": float("nan"),
+        "extended_hours_change_pct": float("nan"),
         "last_3h_return_pct": float("nan"),
         "bearish_1h_candles_last3": 0,
         "last_1h_bearish": False,
@@ -273,6 +318,21 @@ def evaluate_intraday_timing(daily_df, hourly_df):
 
     latest = daily_df.iloc[-1]
     reasons = []
+    quote = quote or {}
+    result["market_state"] = quote.get("market_state", "")
+    result["live_price"] = quote.get("live_price", float("nan"))
+    result["regular_market_price"] = quote.get("regular_market_price", float("nan"))
+    result["pre_market_price"] = quote.get("pre_market_price", float("nan"))
+    result["post_market_price"] = quote.get("post_market_price", float("nan"))
+
+    if result["market_state"] in ["PRE", "POST", "POSTPOST"] and pd.notna(result["live_price"]) and latest["Close"]:
+        result["extended_hours_change_pct"] = ((result["live_price"] / latest["Close"]) - 1) * 100
+        if result["extended_hours_change_pct"] <= EXTENDED_HOURS_REJECT_DROP_PCT:
+            result["status"] = "Rejected - Extended Hours Breakdown"
+            append_reason(reasons, f"extended-hours breakdown {result['extended_hours_change_pct']:.2f}%")
+        elif result["extended_hours_change_pct"] <= EXTENDED_HOURS_WAIT_DROP_PCT:
+            result["status"] = "Wait - Extended Hours Weakness"
+            append_reason(reasons, f"extended-hours weakness {result['extended_hours_change_pct']:.2f}%")
 
     daily_pullback = (
         latest["Close_Below_EMA20"]
@@ -283,13 +343,13 @@ def evaluate_intraday_timing(daily_df, hourly_df):
     high_volume_pullback = bool(latest["Volume"] > latest["Volume_Avg_50"] and latest["Daily_Change_Pct"] <= 0.5)
 
     if daily_pullback:
-        reasons.append("below EMA20 with deep 20D-high pullback")
+        append_reason(reasons, "below EMA20 with deep 20D-high pullback")
     if lower_high_low:
-        reasons.append("lower high and lower low")
+        append_reason(reasons, "lower high and lower low")
     if high_volume_pullback:
-        reasons.append("pullback on above-average volume")
+        append_reason(reasons, "pullback on above-average volume")
 
-    if daily_pullback and (lower_high_low or high_volume_pullback):
+    if result["status"] == "Clean" and daily_pullback and (lower_high_low or high_volume_pullback):
         result["status"] = "Wait - Daily Pullback Risk"
 
     if hourly_df.empty or len(hourly_df) < 3:
@@ -305,18 +365,20 @@ def evaluate_intraday_timing(daily_df, hourly_df):
 
     daily_drop = latest["Daily_Change_Pct"]
     if pd.notna(daily_drop) and daily_drop <= -3:
-        reasons.append("daily distribution")
+        append_reason(reasons, "daily distribution")
     if result["last_3h_return_pct"] <= -1:
-        reasons.append("last 3H selling")
+        append_reason(reasons, "last 3H selling")
     if result["bearish_1h_candles_last3"] >= 2:
-        reasons.append("2+ bearish hourly candles")
+        append_reason(reasons, "2+ bearish hourly candles")
     if result["last_1h_bearish"]:
-        reasons.append("last 1H bearish")
+        append_reason(reasons, "last 1H bearish")
 
-    if "daily distribution" in reasons and result["bearish_1h_candles_last3"] >= 2:
+    if result["status"] != "Rejected - Extended Hours Breakdown" and "daily distribution" in reasons and result["bearish_1h_candles_last3"] >= 2:
         result["status"] = "Failed - Distribution Risk"
     elif result["status"] == "Clean" and result["last_3h_return_pct"] <= -1 and result["bearish_1h_candles_last3"] >= 2:
         result["status"] = "Wait - Intraday Selling"
+    elif result["status"] == "Clean" and result["last_1h_bearish"]:
+        result["status"] = "Wait - Last Hour Bearish"
     result["reason"] = " | ".join(reasons)
     return result
 
@@ -431,6 +493,12 @@ def build_output_row(ticker, row, scores, stage, timing, long_term_status, reaso
         "Long_Term_Status": long_term_status,
         "Entry_Timing_Status": timing["status"],
         "Classification_Reason": reason,
+        "Market_State": timing["market_state"],
+        "Live_Price": timing["live_price"],
+        "Regular_Market_Price": timing["regular_market_price"],
+        "PreMarket_Price": timing["pre_market_price"],
+        "PostMarket_Price": timing["post_market_price"],
+        "Extended_Hours_Change_Pct": timing["extended_hours_change_pct"],
         "Score": scores["final"],
         "Trend_Score": scores["trend"],
         "Relative_Strength_Score": scores["relative_strength"],
@@ -495,7 +563,7 @@ def main():
                 rows.append(build_status_row(ticker, "Avoid", "Insufficient history"))
                 continue
             calc_df = calculate_v5_indicators(df, benchmark_df)
-            timing = evaluate_intraday_timing(calc_df, fetch_hourly_data(ticker))
+            timing = evaluate_intraday_timing(calc_df, fetch_hourly_data(ticker), fetch_live_quote(ticker))
             row = calc_df.iloc[-1]
             scores, stage = score_v5(row)
             long_term_status, reason = classify_signal(row, scores, stage, timing)

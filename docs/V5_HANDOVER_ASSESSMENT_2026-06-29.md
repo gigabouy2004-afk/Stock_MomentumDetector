@@ -228,3 +228,25 @@ Next output usability enhancement:
 Open design detail:
 
 - For plain CSV, a top summary block creates a mixed-layout file that is easier for humans but less clean for automated CSV parsing. Before implementation, decide whether to use one workbook with separate sheets for Excel output, or keep CSV machine-clean and generate a separate summary file.
+
+## Implemented Timing Fixes
+
+Implemented after CREX review:
+
+- Hourly fetch now requests extended-hours data with `prepost=True`.
+- The engine now fetches live quote metadata including `marketState`, regular-market price, pre-market price, and post-market price.
+- Output rows include `Market_State`, `Live_Price`, `Regular_Market_Price`, `PreMarket_Price`, `PostMarket_Price`, and `Extended_Hours_Change_Pct`.
+- Extended-hours weakness is translated into action timing:
+  - `Extended_Hours_Change_Pct <= -2%` becomes `Wait - Extended Hours Weakness`.
+  - `Extended_Hours_Change_Pct <= -5%` becomes `Rejected - Extended Hours Breakdown`.
+- A single bearish final hourly candle now changes timing from `Clean` to `Wait - Last Hour Bearish` when no stronger risk condition already applies.
+
+CREX validation:
+
+- Regular-market price: `4.10`
+- Pre-market price: `3.22`
+- Market state: `PRE`
+- Extended-hours change: about `-21.46%`
+- Final action result after fix: `Rejected - Extended Hours Breakdown`
+
+This confirms that a high structural score no longer overrides a severe current-market breakdown.
