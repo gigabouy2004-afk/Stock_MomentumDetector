@@ -10,8 +10,9 @@ import pandas as pd
 import yfinance as yf
 
 BASE_FOLDER = "D:/Tools/Stock_MomentumDetector"
-EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, "V5_Momentum_Execution_Dump.csv")
-TICKER_INPUT_CSV = Path("D:/Tools/StockCodeMaster/02_Stock/24-06-US_Common_Stocks_Master_Library-Sector-Technology.csv")
+EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, f"V5_Momentum_Execution_Dump-{datetime.now().strftime('%d-%m-%Y')}.csv")
+#EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, "V5_Momentum_Execution_Dump-30-6.csv")
+TICKER_INPUT_CSV = Path("D:/Tools/StockCodeMaster/02_Stock/24-06-US_Common_Stocks_Master_Library.csv")
 
 LOOKBACK_WINDOW = "5y"
 BENCHMARK_TICKER = "SPY"
@@ -56,11 +57,11 @@ ACTION_STATUS_RANK = {
 }
 
 CSV_FIELDS = [
-    "Ticker", "Action_Rank", "Action_Status", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
+    "Ticker", "Action_Status", "Score", "Action_Rank", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
     "Market_State", "Live_Price", "Regular_Market_Price", "PreMarket_Price", "PostMarket_Price",
-    "Extended_Hours_Change_Pct", "Close", "Score", "Trend_Score", "Relative_Strength_Score", "Breakout_Score",
-    "Accumulation_Score", "Volatility_Score", "Weekly_Stage_Score",
-    "Weekly_Stage", "Weekly_Close", "Weekly_SMA_30", "Weekly_SMA_30_Slope_Pct_10W",
+    "Extended_Hours_Change_Pct", "Close", "Trend_Score", "Relative_Strength_Score", "Breakout_Score",
+    "Accumulation_Score", "Volatility_Score", "Weekly_Trend_Score",
+    "Weekly_Trend", "Weekly_Close", "Weekly_SMA_30", "Weekly_SMA_30_Slope_Pct_10W",
     "EMA_20", "EMA_50", "EMA_150", "EMA_200", "EMA_200_Slope_Pct_50D",
     "Return_63D_Pct", "Return_126D_Pct", "Return_252D_Pct", "Benchmark_Return_126D_Pct",
     "RS_126D_Excess_Pct", "RS_Ratio", "RS_SMA_50", "RS_SMA_200", "RS_Slope_Pct_50D",
@@ -94,11 +95,14 @@ def sort_output_rows(rows):
     return sorted(
         rows,
         key=lambda row: (
+            -to_float(row.get("Score")),
+            -to_float(row.get("Trend_Score")),
+            -to_float(row.get("Relative_Strength_Score")),
+            -to_float(row.get("Breakout_Score")),
+            -to_float(row.get("Accumulation_Score")),
             int(to_float(row.get("Action_Rank")) or 99),
             STATUS_SORT_RANK.get(row.get("Long_Term_Status"), 99),
             ENTRY_TIMING_SORT_RANK.get(row.get("Entry_Timing_Status"), 99),
-            -to_float(row.get("Score")),
-            -to_float(row.get("Trend_Score")),
             str(row.get("Ticker", "")),
         ),
     )
@@ -401,20 +405,20 @@ def evaluate_intraday_timing(daily_df, hourly_df, quote=None):
     return result
 
 
-def classify_weekly_stage(row):
+def classify_weekly_trend(row):
     if pd.isna(row["Weekly_SMA_30"]) or pd.isna(row["Weekly_SMA_30_Slope_Pct_10W"]):
         return "Unknown"
     if row["Weekly_Close"] > row["Weekly_SMA_30"] and row["Weekly_SMA_30_Slope_Pct_10W"] > 0:
-        return "Stage 2"
+        return "Uptrend"
     if row["Weekly_Close"] < row["Weekly_SMA_30"] and row["Weekly_SMA_30_Slope_Pct_10W"] < 0:
-        return "Stage 4"
+        return "Downtrend"
     if abs(row["Weekly_SMA_30_Slope_Pct_10W"]) <= 1:
-        return "Stage 1/3"
-    return "Transition"
+        return "Flat"
+    return "Mixed"
 
 
 def score_v5(row):
-    scores = {"trend": 0, "relative_strength": 0, "breakout": 0, "accumulation": 0, "volatility": 0, "weekly_stage": 0}
+    scores = {"trend": 0, "relative_strength": 0, "breakout": 0, "accumulation": 0, "volatility": 0, "weekly_trend": 0}
 
     if row["Close"] > row["EMA_50"] > row["EMA_150"] > row["EMA_200"]:
         scores["trend"] += 20
@@ -463,24 +467,52 @@ def score_v5(row):
     elif row["ATR_Pct"] > 15:
         scores["volatility"] -= 5
 
-    stage = classify_weekly_stage(row)
-    if stage == "Stage 2":
-        scores["weekly_stage"] += 15
-    elif stage == "Transition":
-        scores["weekly_stage"] += 5
-    elif stage == "Stage 4":
-        scores["weekly_stage"] -= 10
+    weekly_trend = classify_weekly_trend(row)
+    if weekly_trend == "Uptrend":
+        scores["weekly_trend"] += 15
+    elif weekly_trend == "Mixed":
+        scores["weekly_trend"] += 5
+    elif weekly_trend == "Downtrend":
+        scores["weekly_trend"] -= 10
 
-    scores["final"] = min(100, max(0, sum(scores.values())))
-    return scores, stage
+    scores["raw"] = min(100, max(0, sum(scores.values())))
+    scores["final"] = scores["raw"]
+    return scores, weekly_trend
 
 
-def classify_signal(row, scores, stage, timing):
+def apply_commercial_readiness_score(row, scores, weekly_trend, timing):
+    final_score = scores["final"]
+
+    if row["Close"] <= row["EMA_200"]:
+        final_score = min(final_score, 20)
+    if weekly_trend == "Downtrend":
+        final_score = min(final_score, 25)
+    elif weekly_trend != "Uptrend":
+        final_score = min(final_score, 45)
+    if row["RS_126D_Excess_Pct"] <= 0:
+        final_score = min(final_score, 35)
+    if row["Distribution_Days_50"] >= 8:
+        final_score = min(final_score, 40)
+    if row["ATR_Pct"] > 15:
+        final_score = min(final_score, 30)
+
+    if timing["status"] == "Rejected - Extended Hours Breakdown":
+        final_score = 0
+    elif timing["status"] == "Failed - Distribution Risk":
+        final_score = min(final_score, 25)
+    elif timing["status"] != "Clean":
+        final_score = min(final_score, 69)
+
+    scores["final"] = min(100, max(0, final_score))
+    return scores
+
+
+def classify_signal(row, scores, weekly_trend, timing):
     reasons = []
     if row["Close"] <= row["EMA_200"]:
         reasons.append("below EMA200")
-    if stage != "Stage 2":
-        reasons.append(f"weekly {stage}")
+    if weekly_trend != "Uptrend":
+        reasons.append(f"weekly {weekly_trend.lower()}")
     if row["RS_126D_Excess_Pct"] <= 0:
         reasons.append("not outperforming SPY")
     if row["Distribution_Days_50"] >= 8:
@@ -488,11 +520,13 @@ def classify_signal(row, scores, stage, timing):
     if row["ATR_Pct"] > 15:
         reasons.append("excess volatility")
 
+    raw_score = scores.get("raw", scores["final"])
+
     if reasons:
         long_term_status = "Avoid"
-    elif scores["final"] >= 85 and timing["status"] == "Clean":
+    elif raw_score >= 85 and timing["status"] == "Clean":
         long_term_status = "Momentum Candidate"
-    elif scores["final"] >= MIN_MOMENTUM_SCORE:
+    elif raw_score >= MIN_MOMENTUM_SCORE:
         long_term_status = "Watchlist Candidate"
     elif row["Distance_From_52W_High_Pct"] <= 5 and row["ATR_Pct"] > 10:
         long_term_status = "Extended / Exhaustion Risk"
@@ -502,7 +536,7 @@ def classify_signal(row, scores, stage, timing):
     return long_term_status, " | ".join(reasons) if reasons else timing["reason"]
 
 
-def build_output_row(ticker, row, scores, stage, timing, long_term_status, reason):
+def build_output_row(ticker, row, scores, weekly_trend, timing, long_term_status, reason):
     action_rank, action_status = resolve_action_status(long_term_status, timing["status"])
     output = {
         "Ticker": ticker,
@@ -523,8 +557,8 @@ def build_output_row(ticker, row, scores, stage, timing, long_term_status, reaso
         "Breakout_Score": scores["breakout"],
         "Accumulation_Score": scores["accumulation"],
         "Volatility_Score": scores["volatility"],
-        "Weekly_Stage_Score": scores["weekly_stage"],
-        "Weekly_Stage": stage,
+        "Weekly_Trend_Score": scores["weekly_trend"],
+        "Weekly_Trend": weekly_trend,
         "Last_3H_Return_Pct": timing["last_3h_return_pct"],
         "Bearish_1H_Candles_Last3": timing["bearish_1h_candles_last3"],
         "Last_1H_Bearish": timing["last_1h_bearish"],
@@ -583,9 +617,10 @@ def main():
             calc_df = calculate_v5_indicators(df, benchmark_df)
             timing = evaluate_intraday_timing(calc_df, fetch_hourly_data(ticker), fetch_live_quote(ticker))
             row = calc_df.iloc[-1]
-            scores, stage = score_v5(row)
-            long_term_status, reason = classify_signal(row, scores, stage, timing)
-            output = build_output_row(ticker, row, scores, stage, timing, long_term_status, reason)
+            scores, weekly_trend = score_v5(row)
+            scores = apply_commercial_readiness_score(row, scores, weekly_trend, timing)
+            long_term_status, reason = classify_signal(row, scores, weekly_trend, timing)
+            output = build_output_row(ticker, row, scores, weekly_trend, timing, long_term_status, reason)
             rows.append(output)
             if long_term_status == "Momentum Candidate" and timing["status"] == "Clean":
                 candidates.append(output)

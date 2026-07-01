@@ -14,11 +14,11 @@ DEFAULT_PERIOD = "8y"
 DEFAULT_SIGNAL_STEP_DAYS = 21
 
 SIGNAL_FIELDS = [
-    "Ticker", "Signal_Date", "Long_Term_Status", "Score", "Weekly_Stage",
+    "Ticker", "Signal_Date", "Long_Term_Status", "Score", "Weekly_Trend",
     "Signal_Close", "Next_Open", "D_Minus_1_Close", "D_Plus_1_Close", "D_Plus_2_Close",
     "D_Minus_1_Lt_D", "D_Lt_D_Plus_1", "D_Lt_D_Plus_2", "D1_D2_Confirmation",
     "Trend_Score", "Relative_Strength_Score", "Breakout_Score", "Accumulation_Score",
-    "Volatility_Score", "Weekly_Stage_Score", "RS_126D_Excess_Pct", "RS_Slope_Pct_50D",
+    "Volatility_Score", "Weekly_Trend_Score", "RS_126D_Excess_Pct", "RS_Slope_Pct_50D",
     "Distance_From_52W_High_Pct", "Net_Accumulation_50", "Distribution_Days_50",
     "ATR_Pct", "Forward_21D_Return_Pct", "Forward_63D_Return_Pct",
     "Forward_126D_Return_Pct", "Forward_252D_Return_Pct",
@@ -47,7 +47,7 @@ def forward_return(df, signal_idx, holding_days):
     return ((exit_price / entry) - 1) * 100 if entry else float("nan")
 
 
-def build_signal_row(ticker, df, signal_idx, scores, stage, status):
+def build_signal_row(ticker, df, signal_idx, scores, weekly_trend, status):
     row = df.iloc[signal_idx]
     d_minus_1 = df.iloc[signal_idx - 1]["Close"] if signal_idx > 0 else float("nan")
     d_plus_1 = df.iloc[signal_idx + 1]["Close"] if signal_idx + 1 < len(df) else float("nan")
@@ -61,7 +61,7 @@ def build_signal_row(ticker, df, signal_idx, scores, stage, status):
         "Signal_Date": df.index[signal_idx].date(),
         "Long_Term_Status": status,
         "Score": scores["final"],
-        "Weekly_Stage": stage,
+        "Weekly_Trend": weekly_trend,
         "Signal_Close": row["Close"],
         "Next_Open": df.iloc[signal_idx + 1]["Open"] if signal_idx + 1 < len(df) else float("nan"),
         "D_Minus_1_Close": d_minus_1,
@@ -76,7 +76,7 @@ def build_signal_row(ticker, df, signal_idx, scores, stage, status):
         "Breakout_Score": scores["breakout"],
         "Accumulation_Score": scores["accumulation"],
         "Volatility_Score": scores["volatility"],
-        "Weekly_Stage_Score": scores["weekly_stage"],
+        "Weekly_Trend_Score": scores["weekly_trend"],
         "RS_126D_Excess_Pct": row["RS_126D_Excess_Pct"],
         "RS_Slope_Pct_50D": row["RS_Slope_Pct_50D"],
         "Distance_From_52W_High_Pct": row["Distance_From_52W_High_Pct"],
@@ -99,11 +99,12 @@ def audit_ticker(ticker, period, signal_step_days, benchmark_df):
     i = engine.MIN_HISTORY_BARS
     while i < len(calc_df) - 2:
         row = calc_df.iloc[i]
-        scores, stage = engine.score_v5(row)
         timing = {"status": "Clean", "reason": "", "last_3h_return_pct": float("nan"), "bearish_1h_candles_last3": 0, "last_1h_bearish": False}
-        status, _ = engine.classify_signal(row, scores, stage, timing)
+        scores, weekly_trend = engine.score_v5(row)
+        scores = engine.apply_commercial_readiness_score(row, scores, weekly_trend, timing)
+        status, _ = engine.classify_signal(row, scores, weekly_trend, timing)
         if status in ["Momentum Candidate", "Watchlist Candidate"]:
-            signals.append(build_signal_row(ticker, calc_df, i, scores, stage, status))
+            signals.append(build_signal_row(ticker, calc_df, i, scores, weekly_trend, status))
             i += signal_step_days
         else:
             i += 1
