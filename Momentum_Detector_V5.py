@@ -10,7 +10,7 @@ import pandas as pd
 import yfinance as yf
 
 BASE_FOLDER = "D:/Tools/Stock_MomentumDetector"
-EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, f"V5_Momentum_Execution_Dump-{datetime.now().strftime('%d-%m-%Y')}.csv")
+EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, "V5_Momentum_Execution_Dump.csv")
 #EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, "V5_Momentum_Execution_Dump-30-6.csv")
 TICKER_INPUT_CSV = Path("D:/Tools/StockCodeMaster/02_Stock/01-07-US_Common_Stocks_Master_Library-Filtered_Technology.csv")
 
@@ -130,8 +130,10 @@ def timestamped_output_path(path):
     return f"{base}_{timestamp}{ext}"
 
 
-def write_execution_log(rows, output_path=EXECUTION_LOG_CSV):
+def write_execution_log(rows, output_path=EXECUTION_LOG_CSV, force_unique=False):
     sorted_rows = sort_output_rows(rows)
+    if force_unique:
+        output_path = timestamped_output_path(output_path)
     output_path = os.path.abspath(output_path)
     output_dir = os.path.dirname(output_path)
     if output_dir:
@@ -149,6 +151,48 @@ def write_execution_log(rows, output_path=EXECUTION_LOG_CSV):
             writer.writerow({field: clean_number(row.get(field, "")) for field in CSV_FIELDS})
 
     return output_path, sorted_rows
+
+
+def format_summary_row(row):
+    return (
+        f"{row.get('Ticker', ''):<8} | "
+        f"{row.get('Final_Decision', ''):<34} | "
+        f"Score {to_float(row.get('Score')):>5.1f} | "
+        f"Close {to_float(row.get('Close')):>8.2f} | "
+        f"Reason: {row.get('Final_Decision_Reason', '')}"
+    )
+
+
+def print_cli_summary(rows, output_path):
+    decisions = ["MOMENTUM_ACTIVE", "MOMENTUM_PRESENT_WAIT_CONFIRMATION", "REJECT"]
+    counts = {decision: 0 for decision in decisions}
+    for row in rows:
+        decision = row.get("Final_Decision", "REJECT")
+        counts[decision] = counts.get(decision, 0) + 1
+
+    print("============================================================")
+    print("=== MOMENTUM DETECTOR V5 COMPLETE ===")
+    print("============================================================")
+    print(f"Total Processed : {len(rows)}")
+    print(f"MOMENTUM_ACTIVE : {counts.get('MOMENTUM_ACTIVE', 0)}")
+    print(f"WAIT_CONFIRM    : {counts.get('MOMENTUM_PRESENT_WAIT_CONFIRMATION', 0)}")
+    print(f"REJECT          : {counts.get('REJECT', 0)}")
+
+    active = [row for row in rows if row.get("Final_Decision") == "MOMENTUM_ACTIVE"]
+    waiting = [row for row in rows if row.get("Final_Decision") == "MOMENTUM_PRESENT_WAIT_CONFIRMATION"]
+
+    if active:
+        print("\nMOMENTUM_ACTIVE")
+        for row in active[:10]:
+            print(format_summary_row(row))
+    if waiting:
+        print("\nMOMENTUM_PRESENT_WAIT_CONFIRMATION")
+        for row in waiting[:10]:
+            print(format_summary_row(row))
+        if len(waiting) > 10:
+            print(f"... {len(waiting) - 10} more wait-confirmation rows in CSV")
+
+    print(f"\nOutput CSV: {output_path}")
 
 
 def parse_ticker_values(values):
@@ -688,6 +732,7 @@ def main():
     parser.add_argument("--ticker-csv", default=None, help="CSV file containing ticker codes. Used when --tickers is not supplied.")
     parser.add_argument("--output", default=EXECUTION_LOG_CSV, help="Fully qualified output CSV path. Defaults to EXECUTION_LOG_CSV.")
     args = parser.parse_args()
+    explicit_output = args.output != parser.get_default("output")
 
     tickers, ticker_source = resolve_tickers(args.tickers, args.ticker_csv, args.positional_tickers)
     tickers = sorted([normalize_ticker(t) for t in tickers if str(t).strip()])
@@ -726,27 +771,8 @@ def main():
         except Exception as exc:
             rows.append(build_status_row(ticker, "Avoid", f"Error: {exc}", str(exc)))
 
-    output_path, sorted_rows = write_execution_log(rows, args.output)
-
-    candidates = [row for row in sorted_rows if row["Final_Decision"] == "MOMENTUM_ACTIVE"]
-    watchlist = [
-        row
-        for row in sorted_rows
-        if row["Final_Decision"] == "MOMENTUM_PRESENT_WAIT_CONFIRMATION"
-    ]
-    print("============================================================")
-    print("=== MOMENTUM DETECTOR V5 COMPLETE ===")
-    print("============================================================")
-    print(f"Total Processed : {len(rows)}")
-    print(f"Confirmed Entries: {len(candidates)}")
-    print(f"Setup/Watchlist  : {len(watchlist)}")
-    for i, row in enumerate(candidates, 1):
-        print(f"{i}. {row['Ticker']:<8} | {row['Final_Decision']:<32} | Score: {row['Score']}/100")
-    if watchlist:
-        print("Setup / watchlist names:")
-        for i, row in enumerate(watchlist, 1):
-            print(f"{i}. {row['Ticker']:<8} | {row['Final_Decision']:<32} | Score: {row['Score']}/100 | Reason: {row['Final_Decision_Reason']}")
-    print(f"-> Output: {output_path}")
+    output_path, sorted_rows = write_execution_log(rows, args.output, force_unique=not explicit_output)
+    print_cli_summary(sorted_rows, output_path)
 
 
 if __name__ == "__main__":
