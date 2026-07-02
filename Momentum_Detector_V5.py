@@ -1,5 +1,7 @@
 import argparse
+import contextlib
 import csv
+import io
 import math
 import os
 import time
@@ -106,6 +108,18 @@ def to_float(value):
         return 0.0
 
 
+def format_optional_number(value, width=8, decimals=2):
+    if value in ["", None]:
+        return " " * max(width - 3, 0) + "N/A"
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return " " * max(width - 3, 0) + "N/A"
+    if not math.isfinite(number):
+        return " " * max(width - 3, 0) + "N/A"
+    return f"{number:>{width}.{decimals}f}"
+
+
 def sort_output_rows(rows):
     return sorted(
         rows,
@@ -158,8 +172,8 @@ def format_summary_row(row):
     return (
         f"{row.get('Ticker', ''):<8} | "
         f"{row.get('Final_Decision', ''):<34} | "
-        f"Score {to_float(row.get('Score')):>5.1f} | "
-        f"Close {to_float(row.get('Close')):>8.2f} | "
+        f"Score {format_optional_number(row.get('Score'), width=5, decimals=1)} | "
+        f"Close {format_optional_number(row.get('Close'))} | "
         f"Reason: {reason}"
     )
 
@@ -191,6 +205,8 @@ def simplify_user_reason(reason):
         "close location below 50.0%": "closed weak within daily range",
         "score below 85": "score too low",
         "not qualified": "momentum not valid",
+        "no market data - check symbol": "no market data - check symbol",
+        "insufficient price history": "insufficient price history",
         "all confirmation gates passed": "momentum active",
     }
     for old, new in replacements.items():
@@ -267,15 +283,18 @@ def normalize_index(df):
     return df
 
 
-def normalize_ticker(ticker):
+def normalize_ticker(ticker, market="auto"):
     formatted = str(ticker).strip()
     if "XNSE" in formatted:
         formatted = formatted.replace("XNSE", "").replace(":", "").strip() + ".NS"
+    if market == "nse" and "." not in formatted and ":" not in formatted:
+        formatted = formatted + ".NS"
     return formatted
 
 
 def fetch_daily_data(ticker, period=LOOKBACK_WINDOW):
-    df = yf.download(ticker, period=period, progress=False, auto_adjust=False)
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        df = yf.download(ticker, period=period, progress=False, auto_adjust=False)
     if df.empty:
         return pd.DataFrame()
     if isinstance(df.columns, pd.MultiIndex):
@@ -755,12 +774,13 @@ def main():
     parser.add_argument("positional_tickers", nargs="*", help="Ticker list without flags, e.g. AAPL MSFT or AAPL,MSFT.")
     parser.add_argument("--tickers", nargs="*", default=[], help="Ticker list. Accepts space-separated and/or comma-separated values, e.g. AAPL MSFT or AAPL,MSFT.")
     parser.add_argument("--ticker-csv", default=None, help="CSV file containing ticker codes. Used when --tickers is not supplied.")
+    parser.add_argument("--market", choices=["auto", "us", "nse"], default="auto", help="Use nse to append .NS to plain NSE symbols.")
     parser.add_argument("--output", default=EXECUTION_LOG_CSV, help="Fully qualified output CSV path. Defaults to EXECUTION_LOG_CSV.")
     args = parser.parse_args()
     explicit_output = args.output != parser.get_default("output")
 
     tickers, ticker_source = resolve_tickers(args.tickers, args.ticker_csv, args.positional_tickers)
-    tickers = sorted([normalize_ticker(t) for t in tickers if str(t).strip()])
+    tickers = sorted([normalize_ticker(t, args.market) for t in tickers if str(t).strip()])
     if not tickers:
         print("No tickers supplied and ticker CSV not available.")
         return
@@ -778,8 +798,11 @@ def main():
         time.sleep(API_DELAY_SECONDS)
         try:
             df = fetch_daily_data(ticker, LOOKBACK_WINDOW)
-            if df.empty or len(df) < MIN_HISTORY_BARS:
-                rows.append(build_status_row(ticker, "Avoid", "Insufficient history"))
+            if df.empty:
+                rows.append(build_status_row(ticker, "Avoid", "No data", "no market data - check symbol"))
+                continue
+            if len(df) < MIN_HISTORY_BARS:
+                rows.append(build_status_row(ticker, "Avoid", "Insufficient history", "insufficient price history"))
                 continue
             calc_df = calculate_v5_indicators(df, benchmark_df)
             timing = evaluate_intraday_timing(calc_df, fetch_hourly_data(ticker), fetch_live_quote(ticker))
