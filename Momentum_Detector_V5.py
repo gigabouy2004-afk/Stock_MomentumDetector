@@ -64,10 +64,9 @@ ACTION_STATUS_RANK = {
 }
 
 FINAL_DECISION_RANK = {
-    "CONFIRMED_MOMENTUM_ENTRY": 1,
-    "MOMENTUM_SETUP_WAIT_CONFIRMATION": 2,
-    "WATCHLIST_ONLY": 3,
-    "REJECT": 4,
+    "MOMENTUM_ACTIVE": 1,
+    "MOMENTUM_PRESENT_WAIT_CONFIRMATION": 2,
+    "REJECT": 3,
 }
 
 CSV_FIELDS = [
@@ -373,18 +372,22 @@ def resolve_final_decision(row, scores, weekly_trend, timing, long_term_status, 
     if long_term_status == "Momentum Candidate":
         if not blockers:
             return (
-                "CONFIRMED_MOMENTUM_ENTRY",
-                FINAL_DECISION_RANK["CONFIRMED_MOMENTUM_ENTRY"],
+                "MOMENTUM_ACTIVE",
+                FINAL_DECISION_RANK["MOMENTUM_ACTIVE"],
                 "all confirmation gates passed",
             )
         return (
-            "MOMENTUM_SETUP_WAIT_CONFIRMATION",
-            FINAL_DECISION_RANK["MOMENTUM_SETUP_WAIT_CONFIRMATION"],
+            "MOMENTUM_PRESENT_WAIT_CONFIRMATION",
+            FINAL_DECISION_RANK["MOMENTUM_PRESENT_WAIT_CONFIRMATION"],
             " | ".join(blockers),
         )
 
     if long_term_status == "Watchlist Candidate":
-        return "WATCHLIST_ONLY", FINAL_DECISION_RANK["WATCHLIST_ONLY"], reason or "below confirmed entry threshold"
+        return (
+            "MOMENTUM_PRESENT_WAIT_CONFIRMATION",
+            FINAL_DECISION_RANK["MOMENTUM_PRESENT_WAIT_CONFIRMATION"],
+            reason or "below confirmed entry threshold",
+        )
 
     return "REJECT", FINAL_DECISION_RANK["REJECT"], reason or "not qualified"
 
@@ -716,20 +719,20 @@ def main():
             long_term_status, reason = classify_signal(row, scores, weekly_trend, timing)
             output = build_output_row(ticker, row, scores, weekly_trend, timing, long_term_status, reason)
             rows.append(output)
-            if output["Final_Decision"] == "CONFIRMED_MOMENTUM_ENTRY":
+            if output["Final_Decision"] == "MOMENTUM_ACTIVE":
                 candidates.append(output)
-            elif output["Final_Decision"] in ["MOMENTUM_SETUP_WAIT_CONFIRMATION", "WATCHLIST_ONLY"]:
+            elif output["Final_Decision"] == "MOMENTUM_PRESENT_WAIT_CONFIRMATION":
                 watchlist.append(output)
         except Exception as exc:
             rows.append(build_status_row(ticker, "Avoid", f"Error: {exc}", str(exc)))
 
     output_path, sorted_rows = write_execution_log(rows, args.output)
 
-    candidates = [row for row in sorted_rows if row["Final_Decision"] == "CONFIRMED_MOMENTUM_ENTRY"]
+    candidates = [row for row in sorted_rows if row["Final_Decision"] == "MOMENTUM_ACTIVE"]
     watchlist = [
         row
         for row in sorted_rows
-        if row["Final_Decision"] in ["MOMENTUM_SETUP_WAIT_CONFIRMATION", "WATCHLIST_ONLY"]
+        if row["Final_Decision"] == "MOMENTUM_PRESENT_WAIT_CONFIRMATION"
     ]
     print("============================================================")
     print("=== MOMENTUM DETECTOR V5 COMPLETE ===")

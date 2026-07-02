@@ -66,9 +66,8 @@ Recommended final column name:
 
 Recommended possible values:
 
-- `CONFIRMED_MOMENTUM_ENTRY`
-- `MOMENTUM_SETUP_WAIT_CONFIRMATION`
-- `WATCHLIST_ONLY`
+- `MOMENTUM_ACTIVE`
+- `MOMENTUM_PRESENT_WAIT_CONFIRMATION`
 - `REJECT`
 
 The exact labels can be changed, but the output must remain one final decision column.
@@ -82,7 +81,7 @@ Any next engine revision should:
 1. Keep internals private or diagnostic-only.
 2. Produce one final decision column.
 3. Backtest that final column against D+1/D+2 behavior.
-4. Treat any `CONFIRMED_MOMENTUM_ENTRY` that fails D+1/D+2 as a direct engine failure.
+4. Treat any `MOMENTUM_ACTIVE` that fails D+1/D+2 as a direct engine failure.
 
 ## Technical Direction For Next Work
 

@@ -14,9 +14,8 @@ The internal score/status fields remain in the CSV for audit, but the field to r
 
 | Final_Decision | Meaning |
 |---|---|
-| `CONFIRMED_MOMENTUM_ENTRY` | Strongest decision. Setup and confirmation gates passed. |
-| `MOMENTUM_SETUP_WAIT_CONFIRMATION` | Structural momentum exists, but immediate-entry confirmation is not strong enough. |
-| `WATCHLIST_ONLY` | Interesting but below confirmed-entry quality. |
+| `MOMENTUM_ACTIVE` | Momentum is active now. This is the only actionable decision. |
+| `MOMENTUM_PRESENT_WAIT_CONFIRMATION` | Momentum structure is present, but immediate-entry confirmation is not strong enough. |
 | `REJECT` | Not qualified for action. |
 
 ## Confirmation Gates Added
@@ -63,18 +62,17 @@ Result by `D_Final_Decision`:
 
 | D_Final_Decision | PASS | FLAG_REVIEW | OBSERVE_CONTINUED | PASS_WAIT | PASS_REJECT | PASS_WATCHLIST_NO_CONFIRMATION |
 |---|---:|---:|---:|---:|---:|---:|
-| `CONFIRMED_MOMENTUM_ENTRY` | 1 | 0 | 0 | 0 | 0 | 0 |
-| `MOMENTUM_SETUP_WAIT_CONFIRMATION` | 0 | 0 | 5 | 3 | 0 | 0 |
-| `WATCHLIST_ONLY` | 0 | 0 | 6 | 0 | 0 | 2 |
+| `MOMENTUM_ACTIVE` | 1 | 0 | 0 | 0 | 0 | 0 |
+| `MOMENTUM_PRESENT_WAIT_CONFIRMATION` | 0 | 0 | 11 | 3 | 0 | 2 |
 | `REJECT` | 0 | 68 | 0 | 0 | 29 | 0 |
 
 The previous failed actionable rows are no longer confirmed entries:
 
 | Ticker | Old Problem | New Final_Decision | Internal Blocker |
 |---|---|---|---|
-| `PL` | Failed D+1 and D+2 after old actionable label | `MOMENTUM_SETUP_WAIT_CONFIRMATION` | 5D extension above 12%; relative volume below 1.0x |
-| `CVV` | Failed D+1 and D+2 after old actionable label | `MOMENTUM_SETUP_WAIT_CONFIRMATION` | ATR above 10%; 5D extension above 12%; 10D extension above 20% |
-| `ETN` | Failed D+1 and D+2 after old actionable label | `MOMENTUM_SETUP_WAIT_CONFIRMATION` | RS excess below 5% |
+| `PL` | Failed D+1 and D+2 after old actionable label | `MOMENTUM_PRESENT_WAIT_CONFIRMATION` | 5D extension above 12%; relative volume below 1.0x |
+| `CVV` | Failed D+1 and D+2 after old actionable label | `MOMENTUM_PRESENT_WAIT_CONFIRMATION` | ATR above 10%; 5D extension above 12%; 10D extension above 20% |
+| `ETN` | Failed D+1 and D+2 after old actionable label | `MOMENTUM_PRESENT_WAIT_CONFIRMATION` | RS excess below 5% |
 
 ## Remaining Risk
 
@@ -82,4 +80,4 @@ This revision is intentionally conservative.
 
 It reduced false confirmed entries in the tested sample, but it also downgrades some rows that did continue. That is acceptable for now because the immediate requirement is that the single confirmed-entry column should not be overconfident.
 
-The next validation should expand the sample size and evaluate only `CONFIRMED_MOMENTUM_ENTRY` as the actionable output.
+The next validation should expand the sample size and evaluate only `MOMENTUM_ACTIVE` as the actionable output.

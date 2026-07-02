@@ -22,9 +22,8 @@ KNOWN_ACTION_STATUSES = {
 }
 
 KNOWN_FINAL_DECISIONS = {
-    "CONFIRMED_MOMENTUM_ENTRY",
-    "MOMENTUM_SETUP_WAIT_CONFIRMATION",
-    "WATCHLIST_ONLY",
+    "MOMENTUM_ACTIVE",
+    "MOMENTUM_PRESENT_WAIT_CONFIRMATION",
     "REJECT",
 }
 
@@ -217,20 +216,15 @@ def validation_for_status(action_status, continuation):
 
 
 def validation_for_final_decision(final_decision, continuation):
-    if final_decision == "CONFIRMED_MOMENTUM_ENTRY":
+    if final_decision == "MOMENTUM_ACTIVE":
         return (
             "PASS" if continuation else "FLAG_REVIEW",
-            "Confirmed momentum entry requires D+1/D+2 continuation above D close.",
+            "Active momentum requires D+1/D+2 continuation above D close.",
         )
-    if final_decision == "MOMENTUM_SETUP_WAIT_CONFIRMATION":
+    if final_decision == "MOMENTUM_PRESENT_WAIT_CONFIRMATION":
         return (
             "OBSERVE_CONTINUED" if continuation else "PASS_WAIT",
-            "Setup is not a confirmed entry; continuation is observed but not required.",
-        )
-    if final_decision == "WATCHLIST_ONLY":
-        return (
-            "OBSERVE_CONTINUED" if continuation else "PASS_WATCHLIST_NO_CONFIRMATION",
-            "Watchlist is not a confirmed entry; continuation is observed but not required.",
+            "Momentum is present but not active; continuation is observed but not required.",
         )
     if final_decision == "REJECT":
         return (
