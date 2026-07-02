@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 import pandas as pd
+import yfinance as yf
 
 import Momentum_Detector_V5 as engine
 
@@ -61,16 +62,25 @@ FIELDS = [
     "D_Entry_Timing_Status",
     "D_Classification_Reason",
     "D_Close",
+    "D_1H_Bars",
+    "D_4H_Bars",
+    "D_Intraday_Data_Status",
     "D1_Date",
     "D1_Open",
     "D1_Close",
     "D1_Action_Status",
     "D1_Score",
+    "D1_1H_Bars",
+    "D1_4H_Bars",
+    "D1_Intraday_Data_Status",
     "D2_Date",
     "D2_Open",
     "D2_Close",
     "D2_Action_Status",
     "D2_Score",
+    "D2_1H_Bars",
+    "D2_4H_Bars",
+    "D2_Intraday_Data_Status",
     "Continuation_By_D2",
     "Validation_Result",
     "Validation_Note",
@@ -104,9 +114,59 @@ def daily_timing_from_slice(calc_df):
     return engine.evaluate_intraday_timing(calc_df, pd.DataFrame(), {})
 
 
-def replay_row(ticker, calc_df, idx):
+def fetch_historical_intraday(ticker, session_date, interval):
+    start = pd.Timestamp(session_date).date().isoformat()
+    end = (pd.Timestamp(session_date) + pd.Timedelta(days=1)).date().isoformat()
+    try:
+        df = yf.Ticker(ticker).history(
+            start=start,
+            end=end,
+            interval=interval,
+            prepost=True,
+            auto_adjust=False,
+        )
+    except Exception:
+        return pd.DataFrame()
+    if df.empty:
+        return pd.DataFrame()
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+    fields = [field for field in ["Open", "High", "Low", "Close", "Volume"] if field in df.columns]
+    return df[fields].dropna().copy()
+
+
+def intraday_for_session(ticker, session_date, cache, enabled):
+    key = (ticker, pd.Timestamp(session_date).date().isoformat())
+    if key in cache:
+        return cache[key]
+    if not enabled:
+        result = {
+            "hourly": pd.DataFrame(),
+            "bars_1h": 0,
+            "bars_4h": 0,
+            "status": "DISABLED",
+        }
+        cache[key] = result
+        return result
+
+    hourly = fetch_historical_intraday(ticker, session_date, "1h")
+    four_hour = fetch_historical_intraday(ticker, session_date, "4h")
+    status = "OK" if not hourly.empty else "INTRADAY_UNAVAILABLE"
+    if not hourly.empty and four_hour.empty:
+        status = "OK_1H_ONLY"
+    result = {
+        "hourly": hourly,
+        "bars_1h": len(hourly),
+        "bars_4h": len(four_hour),
+        "status": status,
+    }
+    cache[key] = result
+    return result
+
+
+def replay_row(ticker, calc_df, idx, hourly_df=None):
     calc_slice = calc_df.iloc[: idx + 1]
-    timing = daily_timing_from_slice(calc_slice)
+    timing = engine.evaluate_intraday_timing(calc_slice, hourly_df if hourly_df is not None else pd.DataFrame(), {})
     latest = calc_df.iloc[idx]
     scores, weekly_trend = engine.score_v5(latest)
     scores = engine.apply_commercial_readiness_score(latest, scores, weekly_trend, timing)
@@ -143,10 +203,14 @@ def validation_for_status(action_status, continuation):
     return "FAIL_UNKNOWN_STATUS", "Action status is not listed in the validation contract."
 
 
-def build_validation_row(ticker, calc_df, d_idx):
-    d = replay_row(ticker, calc_df, d_idx)
-    d1 = replay_row(ticker, calc_df, d_idx + 1)
-    d2 = replay_row(ticker, calc_df, d_idx + 2)
+def build_validation_row(ticker, calc_df, d_idx, intraday_cache, use_historical_intraday):
+    d_intraday = intraday_for_session(ticker, calc_df.index[d_idx], intraday_cache, use_historical_intraday)
+    d1_intraday = intraday_for_session(ticker, calc_df.index[d_idx + 1], intraday_cache, use_historical_intraday)
+    d2_intraday = intraday_for_session(ticker, calc_df.index[d_idx + 2], intraday_cache, use_historical_intraday)
+
+    d = replay_row(ticker, calc_df, d_idx, d_intraday["hourly"])
+    d1 = replay_row(ticker, calc_df, d_idx + 1, d1_intraday["hourly"])
+    d2 = replay_row(ticker, calc_df, d_idx + 2, d2_intraday["hourly"])
 
     d_close = calc_df.iloc[d_idx]["Close"]
     d1_open = calc_df.iloc[d_idx + 1]["Open"]
@@ -169,22 +233,31 @@ def build_validation_row(ticker, calc_df, d_idx):
         "D_Entry_Timing_Status": d["Entry_Timing_Status"],
         "D_Classification_Reason": d["Classification_Reason"],
         "D_Close": d_close,
+        "D_1H_Bars": d_intraday["bars_1h"],
+        "D_4H_Bars": d_intraday["bars_4h"],
+        "D_Intraday_Data_Status": d_intraday["status"],
         "D1_Date": calc_df.index[d_idx + 1].date().isoformat(),
         "D1_Open": d1_open,
         "D1_Close": calc_df.iloc[d_idx + 1]["Close"],
         "D1_Action_Status": d1["Action_Status"],
         "D1_Score": d1["Score"],
+        "D1_1H_Bars": d1_intraday["bars_1h"],
+        "D1_4H_Bars": d1_intraday["bars_4h"],
+        "D1_Intraday_Data_Status": d1_intraday["status"],
         "D2_Date": calc_df.index[d_idx + 2].date().isoformat(),
         "D2_Open": d2_open,
         "D2_Close": d2_close,
         "D2_Action_Status": d2["Action_Status"],
         "D2_Score": d2["Score"],
+        "D2_1H_Bars": d2_intraday["bars_1h"],
+        "D2_4H_Bars": d2_intraday["bars_4h"],
+        "D2_Intraday_Data_Status": d2_intraday["status"],
         "Continuation_By_D2": continuation,
         "Validation_Result": validation_result,
         "Validation_Note": validation_note,
         "Status_String_Check": status_check,
         "Reason_String_Check": validate_reason_string(d["Classification_Reason"]),
-        "Daily_Replay_Limitation": "Historical intraday and extended-hours timing statuses are not replayable from daily Yahoo history.",
+        "Daily_Replay_Limitation": "Historical extended-hours quote status is not replayable from daily bars. Historical 1H/4H candle availability is recorded per row.",
     }
 
 
@@ -224,6 +297,7 @@ def main():
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--output", default=DEFAULT_OUTPUT)
     parser.add_argument("--summary-output", default=DEFAULT_SUMMARY)
+    parser.add_argument("--no-historical-intraday", action="store_true", help="Disable historical 1H/4H D-session fetches.")
     args = parser.parse_args()
 
     if not args.date and not (args.start_date and args.end_date):
@@ -235,6 +309,8 @@ def main():
     benchmark_df = engine.fetch_daily_data(engine.BENCHMARK_TICKER, args.period)
     rows = []
     skipped = 0
+    intraday_cache = {}
+    use_historical_intraday = not args.no_historical_intraday
 
     for ticker in tickers:
         print(f"Validating {ticker}...")
@@ -261,7 +337,7 @@ def main():
             for d_idx in eligible_positions:
                 if d_idx < engine.MIN_HISTORY_BARS:
                     continue
-                rows.append(build_validation_row(ticker, calc_df, d_idx))
+                rows.append(build_validation_row(ticker, calc_df, d_idx, intraday_cache, use_historical_intraday))
                 added += 1
             if not added:
                 skipped += 1

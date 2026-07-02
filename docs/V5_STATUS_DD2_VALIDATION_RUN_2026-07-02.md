@@ -113,3 +113,58 @@ The validation script found no unknown status strings and no unknown reason stri
 
 The engine is traceable and repeatable, but the April validation shows the decision logic is not fully calibrated for near-term D+2 price continuation. The largest issue is that many `Avoid` rows still continued by D+2, so the engine's hard-failure reasons may be too strict if the desired use is immediate exchange-price action rather than conservative structural filtering.
 
+## Intraday Replay Correction
+
+Correction date: 2026-07-02
+
+The original validation replay used daily bars only. That was not sufficient for the stated validation problem because the D-day decision depends on 1H timing rules such as:
+
+- `Wait - Intraday Selling`
+- `Wait - Last Hour Bearish`
+- `Failed - Distribution Risk`
+
+`Validate_V5_Status_DD2.py` now fetches historical D/D+1/D+2 session intraday candles:
+
+- 1H candles are passed into `evaluate_intraday_timing()` for status replay.
+- 4H candle availability is recorded in the audit output.
+- Rows record `D_1H_Bars`, `D_4H_Bars`, and `D_Intraday_Data_Status`, with matching D+1 and D+2 fields.
+
+### April 12 Single-Date Replay With Historical Intraday
+
+Command:
+
+```powershell
+python .\Validate_V5_Status_DD2.py --ticker-csv D:\Tools\StockCodeMaster\02_Stock\24-06-US_Common_Stocks_Master_Library-Sector-Technology.csv --date 2026-04-12 --period 2y --limit 50 --output D:\TMP\V5_Status_DD2_Validation_Tech50_2026-04-12_Intraday.csv --summary-output D:\TMP\V5_Status_DD2_Validation_Tech50_2026-04-12_Intraday_Summary.csv
+```
+
+Repo artifacts:
+
+- `backtests/V5_Status_DD2_Validation_Tech50_2026-04-12_Intraday.csv`
+- `backtests/V5_Status_DD2_Validation_Tech50_2026-04-12_Intraday_Summary.csv`
+
+Summary:
+
+| Metric | Value |
+|---|---:|
+| Rows Validated | 47 |
+| Rows Skipped | 3 |
+| Actionable Momentum Candidate | 4 |
+| Downgraded - Wait | 1 |
+| Rejected - Distribution Risk | 1 |
+| Avoid | 41 |
+| PASS | 4 |
+| PASS_AVOID | 2 |
+| FLAG_REVIEW | 41 |
+| D intraday data status | 47 OK |
+
+D entry timing coverage:
+
+| D Entry Timing Status | Rows |
+|---|---:|
+| Clean | 28 |
+| Wait - Daily Pullback Risk | 11 |
+| Wait - Last Hour Bearish | 5 |
+| Wait - Intraday Selling | 2 |
+| Failed - Distribution Risk | 1 |
+
+This replaces the daily-only interpretation for recent historical dates where the provider can return 1H/4H candles.
