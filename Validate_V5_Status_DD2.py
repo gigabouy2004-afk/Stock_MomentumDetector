@@ -21,6 +21,13 @@ KNOWN_ACTION_STATUSES = {
     "Avoid",
 }
 
+KNOWN_FINAL_DECISIONS = {
+    "CONFIRMED_MOMENTUM_ENTRY",
+    "MOMENTUM_SETUP_WAIT_CONFIRMATION",
+    "WATCHLIST_ONLY",
+    "REJECT",
+}
+
 KNOWN_ENTRY_TIMING_STATUSES = {
     "Clean",
     "Wait - Daily Pullback Risk",
@@ -57,6 +64,8 @@ KNOWN_REASON_PREFIXES = {
 FIELDS = [
     "Ticker",
     "D_Date",
+    "D_Final_Decision",
+    "D_Final_Decision_Reason",
     "D_Action_Status",
     "D_Score",
     "D_Entry_Timing_Status",
@@ -68,6 +77,8 @@ FIELDS = [
     "D1_Date",
     "D1_Open",
     "D1_Close",
+    "D1_Final_Decision",
+    "D1_Final_Decision_Reason",
     "D1_Action_Status",
     "D1_Score",
     "D1_1H_Bars",
@@ -76,6 +87,8 @@ FIELDS = [
     "D2_Date",
     "D2_Open",
     "D2_Close",
+    "D2_Final_Decision",
+    "D2_Final_Decision_Reason",
     "D2_Action_Status",
     "D2_Score",
     "D2_1H_Bars",
@@ -203,6 +216,30 @@ def validation_for_status(action_status, continuation):
     return "FAIL_UNKNOWN_STATUS", "Action status is not listed in the validation contract."
 
 
+def validation_for_final_decision(final_decision, continuation):
+    if final_decision == "CONFIRMED_MOMENTUM_ENTRY":
+        return (
+            "PASS" if continuation else "FLAG_REVIEW",
+            "Confirmed momentum entry requires D+1/D+2 continuation above D close.",
+        )
+    if final_decision == "MOMENTUM_SETUP_WAIT_CONFIRMATION":
+        return (
+            "OBSERVE_CONTINUED" if continuation else "PASS_WAIT",
+            "Setup is not a confirmed entry; continuation is observed but not required.",
+        )
+    if final_decision == "WATCHLIST_ONLY":
+        return (
+            "OBSERVE_CONTINUED" if continuation else "PASS_WATCHLIST_NO_CONFIRMATION",
+            "Watchlist is not a confirmed entry; continuation is observed but not required.",
+        )
+    if final_decision == "REJECT":
+        return (
+            "FLAG_REVIEW" if continuation else "PASS_REJECT",
+            "Rejected rows should not show clean immediate continuation without review.",
+        )
+    return "FAIL_UNKNOWN_FINAL_DECISION", "Final decision is not listed in the validation contract."
+
+
 def build_validation_row(ticker, calc_df, d_idx, intraday_cache, use_historical_intraday):
     d_intraday = intraday_for_session(ticker, calc_df.index[d_idx], intraday_cache, use_historical_intraday)
     d1_intraday = intraday_for_session(ticker, calc_df.index[d_idx + 1], intraday_cache, use_historical_intraday)
@@ -217,10 +254,12 @@ def build_validation_row(ticker, calc_df, d_idx, intraday_cache, use_historical_
     d2_open = calc_df.iloc[d_idx + 2]["Open"]
     d2_close = calc_df.iloc[d_idx + 2]["Close"]
     continuation = bool(d1_open > d_close or d2_open > d_close or d2_close > d_close)
-    validation_result, validation_note = validation_for_status(d["Action_Status"], continuation)
+    validation_result, validation_note = validation_for_final_decision(d["Final_Decision"], continuation)
 
     status_check = "OK"
-    if d["Action_Status"] not in KNOWN_ACTION_STATUSES:
+    if d["Final_Decision"] not in KNOWN_FINAL_DECISIONS:
+        status_check = f"UNKNOWN_FINAL_DECISION: {d['Final_Decision']}"
+    elif d["Action_Status"] not in KNOWN_ACTION_STATUSES:
         status_check = f"UNKNOWN_ACTION_STATUS: {d['Action_Status']}"
     elif d["Entry_Timing_Status"] not in KNOWN_ENTRY_TIMING_STATUSES:
         status_check = f"UNKNOWN_ENTRY_TIMING_STATUS: {d['Entry_Timing_Status']}"
@@ -228,6 +267,8 @@ def build_validation_row(ticker, calc_df, d_idx, intraday_cache, use_historical_
     return {
         "Ticker": ticker,
         "D_Date": calc_df.index[d_idx].date().isoformat(),
+        "D_Final_Decision": d["Final_Decision"],
+        "D_Final_Decision_Reason": d["Final_Decision_Reason"],
         "D_Action_Status": d["Action_Status"],
         "D_Score": d["Score"],
         "D_Entry_Timing_Status": d["Entry_Timing_Status"],
@@ -239,6 +280,8 @@ def build_validation_row(ticker, calc_df, d_idx, intraday_cache, use_historical_
         "D1_Date": calc_df.index[d_idx + 1].date().isoformat(),
         "D1_Open": d1_open,
         "D1_Close": calc_df.iloc[d_idx + 1]["Close"],
+        "D1_Final_Decision": d1["Final_Decision"],
+        "D1_Final_Decision_Reason": d1["Final_Decision_Reason"],
         "D1_Action_Status": d1["Action_Status"],
         "D1_Score": d1["Score"],
         "D1_1H_Bars": d1_intraday["bars_1h"],
@@ -247,6 +290,8 @@ def build_validation_row(ticker, calc_df, d_idx, intraday_cache, use_historical_
         "D2_Date": calc_df.index[d_idx + 2].date().isoformat(),
         "D2_Open": d2_open,
         "D2_Close": d2_close,
+        "D2_Final_Decision": d2["Final_Decision"],
+        "D2_Final_Decision_Reason": d2["Final_Decision_Reason"],
         "D2_Action_Status": d2["Action_Status"],
         "D2_Score": d2["Score"],
         "D2_1H_Bars": d2_intraday["bars_1h"],
@@ -278,6 +323,8 @@ def summarize(rows, skipped):
     if not df.empty:
         for status, count in df["D_Action_Status"].value_counts().sort_index().items():
             summary.append({"Metric": f"D_Action_Status={status}", "Value": int(count)})
+        for status, count in df["D_Final_Decision"].value_counts().sort_index().items():
+            summary.append({"Metric": f"D_Final_Decision={status}", "Value": int(count)})
         for result, count in df["Validation_Result"].value_counts().sort_index().items():
             summary.append({"Metric": f"Validation_Result={result}", "Value": int(count)})
         for check, count in df["Status_String_Check"].value_counts().sort_index().items():

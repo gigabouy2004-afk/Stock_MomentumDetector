@@ -28,6 +28,13 @@ DAILY_DISTRIBUTION_DROP_PCT = -3.0
 HIGH_VOLUME_PULLBACK_MAX_GAIN_PCT = 0.5
 INTRADAY_SELLING_3H_RETURN_PCT = -1.0
 BEARISH_HOURLY_CANDLES_CONFIRMATION = 2
+CONFIRMED_ENTRY_MIN_SCORE = 85
+CONFIRMED_ENTRY_MIN_RS_EXCESS_PCT = 5.0
+CONFIRMED_ENTRY_MAX_ATR_PCT = 10.0
+CONFIRMED_ENTRY_MAX_5D_RETURN_PCT = 12.0
+CONFIRMED_ENTRY_MAX_10D_RETURN_PCT = 20.0
+CONFIRMED_ENTRY_MIN_REL_VOLUME_20 = 1.0
+CONFIRMED_ENTRY_MIN_CLOSE_LOCATION_PCT = 50.0
 
 STATUS_SORT_RANK = {
     "Momentum Candidate": 0,
@@ -56,8 +63,16 @@ ACTION_STATUS_RANK = {
     "Avoid": 5,
 }
 
+FINAL_DECISION_RANK = {
+    "CONFIRMED_MOMENTUM_ENTRY": 1,
+    "MOMENTUM_SETUP_WAIT_CONFIRMATION": 2,
+    "WATCHLIST_ONLY": 3,
+    "REJECT": 4,
+}
+
 CSV_FIELDS = [
-    "Ticker", "Action_Status", "Score", "Action_Rank", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
+    "Ticker", "Final_Decision", "Final_Decision_Rank", "Final_Decision_Reason",
+    "Action_Status", "Score", "Action_Rank", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
     "Market_State", "Live_Price", "Regular_Market_Price", "PreMarket_Price", "PostMarket_Price",
     "Extended_Hours_Change_Pct", "Close", "Trend_Score", "Relative_Strength_Score", "Breakout_Score",
     "Accumulation_Score", "Volatility_Score", "Weekly_Trend_Score",
@@ -68,7 +83,8 @@ CSV_FIELDS = [
     "Return_5D_Pct", "Return_10D_Pct", "High_20D", "High_55D", "High_100D", "High_252D",
     "Distance_From_20D_High_Pct", "Distance_From_52W_High_Pct", "Lower_High_Day",
     "Lower_Low_Day", "Close_Below_EMA20",
-    "ATR_14", "ATR_Pct", "Volume", "Volume_Avg_50", "Accumulation_Days_50",
+    "ATR_14", "ATR_Pct", "Volume", "Volume_Avg_20", "Volume_Avg_50", "Relative_Volume_20",
+    "Close_Location_Pct", "Extension_Risk", "Accumulation_Days_50",
     "Distribution_Days_50", "Net_Accumulation_50", "Latest_Distribution_Day",
     "Daily_Change_Pct", "Last_3H_Return_Pct", "Bearish_1H_Candles_Last3", "Last_1H_Bearish",
 ]
@@ -95,6 +111,7 @@ def sort_output_rows(rows):
     return sorted(
         rows,
         key=lambda row: (
+            int(to_float(row.get("Final_Decision_Rank")) or 99),
             -to_float(row.get("Score")),
             -to_float(row.get("Trend_Score")),
             -to_float(row.get("Relative_Strength_Score")),
@@ -162,8 +179,12 @@ def resolve_action_status(long_term_status, entry_timing_status):
 
 def build_status_row(ticker, long_term_status, entry_timing_status, reason=""):
     action_rank, action_status = resolve_action_status(long_term_status, entry_timing_status)
+    final_decision, final_rank, final_reason = resolve_final_decision({}, {}, "", {"status": entry_timing_status}, long_term_status, reason)
     return {
         "Ticker": ticker,
+        "Final_Decision": final_decision,
+        "Final_Decision_Rank": final_rank,
+        "Final_Decision_Reason": final_reason,
         "Action_Rank": action_rank,
         "Action_Status": action_status,
         "Long_Term_Status": long_term_status,
@@ -266,6 +287,7 @@ def calculate_v5_indicators(df, benchmark_df):
     df["Return_63D_Pct"] = close.pct_change(63) * 100
     df["Return_126D_Pct"] = close.pct_change(126) * 100
     df["Return_252D_Pct"] = close.pct_change(252) * 100
+    df["Extension_Risk"] = (df["Return_5D_Pct"] > CONFIRMED_ENTRY_MAX_5D_RETURN_PCT) | (df["Return_10D_Pct"] > CONFIRMED_ENTRY_MAX_10D_RETURN_PCT)
 
     df["High_20D"] = df["High"].rolling(20).max()
     df["High_55D"] = df["High"].rolling(55).max()
@@ -279,7 +301,12 @@ def calculate_v5_indicators(df, benchmark_df):
 
     df["ATR_14"] = true_range(df).rolling(14).mean()
     df["ATR_Pct"] = (df["ATR_14"] / close) * 100
+    df["Volume_Avg_20"] = volume.rolling(20).mean()
     df["Volume_Avg_50"] = volume.rolling(50).mean()
+    df["Relative_Volume_20"] = volume / df["Volume_Avg_20"]
+    daily_range = df["High"] - df["Low"]
+    df["Close_Location_Pct"] = ((close - df["Low"]) / daily_range) * 100
+    df.loc[daily_range == 0, "Close_Location_Pct"] = 50.0
 
     daily_change = close.pct_change() * 100
     df["Daily_Change_Pct"] = daily_change
@@ -305,6 +332,61 @@ def calculate_v5_indicators(df, benchmark_df):
     df = df.join(weekly_fields.reindex(df.index, method="ffill"))
 
     return df
+
+
+def decision_blockers(row, scores, weekly_trend, timing):
+    blockers = []
+    score = scores.get("final", 0)
+
+    if score < CONFIRMED_ENTRY_MIN_SCORE:
+        blockers.append(f"score below {CONFIRMED_ENTRY_MIN_SCORE}")
+    if weekly_trend != "Uptrend":
+        blockers.append(f"weekly {str(weekly_trend).lower()}")
+    if timing.get("status") != "Clean":
+        blockers.append(f"timing {timing.get('status', '')}")
+    if row.get("RS_126D_Excess_Pct", float("nan")) < CONFIRMED_ENTRY_MIN_RS_EXCESS_PCT:
+        blockers.append(f"RS excess below {CONFIRMED_ENTRY_MIN_RS_EXCESS_PCT}%")
+    if row.get("ATR_Pct", float("nan")) > CONFIRMED_ENTRY_MAX_ATR_PCT:
+        blockers.append(f"ATR above {CONFIRMED_ENTRY_MAX_ATR_PCT}%")
+    if row.get("Return_5D_Pct", float("nan")) > CONFIRMED_ENTRY_MAX_5D_RETURN_PCT:
+        blockers.append(f"5D extension above {CONFIRMED_ENTRY_MAX_5D_RETURN_PCT}%")
+    if row.get("Return_10D_Pct", float("nan")) > CONFIRMED_ENTRY_MAX_10D_RETURN_PCT:
+        blockers.append(f"10D extension above {CONFIRMED_ENTRY_MAX_10D_RETURN_PCT}%")
+    if row.get("Relative_Volume_20", float("nan")) < CONFIRMED_ENTRY_MIN_REL_VOLUME_20:
+        blockers.append(f"relative volume below {CONFIRMED_ENTRY_MIN_REL_VOLUME_20}x")
+    if row.get("Close_Location_Pct", float("nan")) < CONFIRMED_ENTRY_MIN_CLOSE_LOCATION_PCT:
+        blockers.append(f"close location below {CONFIRMED_ENTRY_MIN_CLOSE_LOCATION_PCT}%")
+
+    return blockers
+
+
+def resolve_final_decision(row, scores, weekly_trend, timing, long_term_status, reason):
+    timing_status = timing.get("status", "")
+    if timing_status in ["Rejected - Extended Hours Breakdown", "Failed - Distribution Risk"]:
+        return "REJECT", FINAL_DECISION_RANK["REJECT"], reason or timing_status
+    if long_term_status == "Avoid":
+        return "REJECT", FINAL_DECISION_RANK["REJECT"], reason or "not qualified"
+    if long_term_status in ["Extended / Exhaustion Risk"]:
+        return "REJECT", FINAL_DECISION_RANK["REJECT"], reason or "extension risk"
+
+    blockers = decision_blockers(row, scores, weekly_trend, timing)
+    if long_term_status == "Momentum Candidate":
+        if not blockers:
+            return (
+                "CONFIRMED_MOMENTUM_ENTRY",
+                FINAL_DECISION_RANK["CONFIRMED_MOMENTUM_ENTRY"],
+                "all confirmation gates passed",
+            )
+        return (
+            "MOMENTUM_SETUP_WAIT_CONFIRMATION",
+            FINAL_DECISION_RANK["MOMENTUM_SETUP_WAIT_CONFIRMATION"],
+            " | ".join(blockers),
+        )
+
+    if long_term_status == "Watchlist Candidate":
+        return "WATCHLIST_ONLY", FINAL_DECISION_RANK["WATCHLIST_ONLY"], reason or "below confirmed entry threshold"
+
+    return "REJECT", FINAL_DECISION_RANK["REJECT"], reason or "not qualified"
 
 
 def append_reason(reasons, reason):
@@ -538,8 +620,19 @@ def classify_signal(row, scores, weekly_trend, timing):
 
 def build_output_row(ticker, row, scores, weekly_trend, timing, long_term_status, reason):
     action_rank, action_status = resolve_action_status(long_term_status, timing["status"])
+    final_decision, final_decision_rank, final_decision_reason = resolve_final_decision(
+        row,
+        scores,
+        weekly_trend,
+        timing,
+        long_term_status,
+        reason,
+    )
     output = {
         "Ticker": ticker,
+        "Final_Decision": final_decision,
+        "Final_Decision_Rank": final_decision_rank,
+        "Final_Decision_Reason": final_decision_reason,
         "Action_Rank": action_rank,
         "Action_Status": action_status,
         "Long_Term_Status": long_term_status,
@@ -622,33 +715,33 @@ def main():
             long_term_status, reason = classify_signal(row, scores, weekly_trend, timing)
             output = build_output_row(ticker, row, scores, weekly_trend, timing, long_term_status, reason)
             rows.append(output)
-            if long_term_status == "Momentum Candidate" and timing["status"] == "Clean":
+            if output["Final_Decision"] == "CONFIRMED_MOMENTUM_ENTRY":
                 candidates.append(output)
-            elif long_term_status in ["Momentum Candidate", "Watchlist Candidate"]:
+            elif output["Final_Decision"] in ["MOMENTUM_SETUP_WAIT_CONFIRMATION", "WATCHLIST_ONLY"]:
                 watchlist.append(output)
         except Exception as exc:
             rows.append(build_status_row(ticker, "Avoid", f"Error: {exc}", str(exc)))
 
     output_path, sorted_rows = write_execution_log(rows, args.output)
 
-    candidates = [row for row in sorted_rows if row["Action_Status"] == "Actionable Momentum Candidate"]
+    candidates = [row for row in sorted_rows if row["Final_Decision"] == "CONFIRMED_MOMENTUM_ENTRY"]
     watchlist = [
         row
         for row in sorted_rows
-        if row["Action_Status"] in ["Watchlist Candidate", "Downgraded - Wait", "Rejected - Distribution Risk"]
+        if row["Final_Decision"] in ["MOMENTUM_SETUP_WAIT_CONFIRMATION", "WATCHLIST_ONLY"]
     ]
     print("============================================================")
     print("=== MOMENTUM DETECTOR V5 COMPLETE ===")
     print("============================================================")
     print(f"Total Processed : {len(rows)}")
-    print(f"Clean Candidates: {len(candidates)}")
-    print(f"Watchlist/Wait  : {len(watchlist)}")
+    print(f"Confirmed Entries: {len(candidates)}")
+    print(f"Setup/Watchlist  : {len(watchlist)}")
     for i, row in enumerate(candidates, 1):
-        print(f"{i}. {row['Ticker']:<8} | {row['Action_Status']:<30} | Score: {row['Score']}/100 | Entry: {row['Entry_Timing_Status']}")
+        print(f"{i}. {row['Ticker']:<8} | {row['Final_Decision']:<32} | Score: {row['Score']}/100")
     if watchlist:
-        print("Watchlist / wait-for-entry names:")
+        print("Setup / watchlist names:")
         for i, row in enumerate(watchlist, 1):
-            print(f"{i}. {row['Ticker']:<8} | {row['Action_Status']:<30} | Score: {row['Score']}/100 | Entry: {row['Entry_Timing_Status']}")
+            print(f"{i}. {row['Ticker']:<8} | {row['Final_Decision']:<32} | Score: {row['Score']}/100 | Reason: {row['Final_Decision_Reason']}")
     print(f"-> Output: {output_path}")
 
 
