@@ -178,19 +178,9 @@ def print_cli_summary(rows, output_path):
     print(f"WAIT_CONFIRM    : {counts.get('MOMENTUM_PRESENT_WAIT_CONFIRMATION', 0)}")
     print(f"REJECT          : {counts.get('REJECT', 0)}")
 
-    active = [row for row in rows if row.get("Final_Decision") == "MOMENTUM_ACTIVE"]
-    waiting = [row for row in rows if row.get("Final_Decision") == "MOMENTUM_PRESENT_WAIT_CONFIRMATION"]
-
-    if active:
-        print("\nMOMENTUM_ACTIVE")
-        for row in active[:10]:
-            print(format_summary_row(row))
-    if waiting:
-        print("\nMOMENTUM_PRESENT_WAIT_CONFIRMATION")
-        for row in waiting[:10]:
-            print(format_summary_row(row))
-        if len(waiting) > 10:
-            print(f"... {len(waiting) - 10} more wait-confirmation rows in CSV")
+    print("\nTicker Decisions")
+    for row in rows:
+        print(format_summary_row(row))
 
     print(f"\nOutput CSV: {output_path}")
 
