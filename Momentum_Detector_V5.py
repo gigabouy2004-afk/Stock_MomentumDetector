@@ -12,7 +12,7 @@ import yfinance as yf
 BASE_FOLDER = "D:/Tools/Stock_MomentumDetector"
 EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, f"V5_Momentum_Execution_Dump-{datetime.now().strftime('%d-%m-%Y')}.csv")
 #EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, "V5_Momentum_Execution_Dump-30-6.csv")
-TICKER_INPUT_CSV = Path("D:/Tools/StockCodeMaster/02_Stock/24-06-US_Common_Stocks_Master_Library.csv")
+TICKER_INPUT_CSV = Path("D:/Tools/StockCodeMaster/02_Stock/01-07-US_Common_Stocks_Master_Library-Filtered_Technology.csv")
 
 LOOKBACK_WINDOW = "5y"
 BENCHMARK_TICKER = "SPY"
@@ -670,8 +670,8 @@ def load_tickers(ticker_csv=TICKER_INPUT_CSV):
     return tickers_df[ticker_col].dropna().tolist()
 
 
-def resolve_tickers(cli_tickers, ticker_csv):
-    tickers = parse_ticker_values(cli_tickers)
+def resolve_tickers(cli_tickers, ticker_csv, positional_tickers=None):
+    tickers = parse_ticker_values([*(cli_tickers or []), *(positional_tickers or [])])
     if tickers:
         return tickers, "CLI ticker list"
     input_csv = Path(ticker_csv) if ticker_csv else TICKER_INPUT_CSV
@@ -680,12 +680,13 @@ def resolve_tickers(cli_tickers, ticker_csv):
 
 def main():
     parser = argparse.ArgumentParser(description="Momentum Detector V5 - Stage/RS/Breakout Momentum Engine")
+    parser.add_argument("positional_tickers", nargs="*", help="Ticker list without flags, e.g. AAPL MSFT or AAPL,MSFT.")
     parser.add_argument("--tickers", nargs="*", default=[], help="Ticker list. Accepts space-separated and/or comma-separated values, e.g. AAPL MSFT or AAPL,MSFT.")
     parser.add_argument("--ticker-csv", default=None, help="CSV file containing ticker codes. Used when --tickers is not supplied.")
     parser.add_argument("--output", default=EXECUTION_LOG_CSV, help="Fully qualified output CSV path. Defaults to EXECUTION_LOG_CSV.")
     args = parser.parse_args()
 
-    tickers, ticker_source = resolve_tickers(args.tickers, args.ticker_csv)
+    tickers, ticker_source = resolve_tickers(args.tickers, args.ticker_csv, args.positional_tickers)
     tickers = sorted([normalize_ticker(t) for t in tickers if str(t).strip()])
     if not tickers:
         print("No tickers supplied and ticker CSV not available.")
