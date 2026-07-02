@@ -154,13 +154,48 @@ def write_execution_log(rows, output_path=EXECUTION_LOG_CSV, force_unique=False)
 
 
 def format_summary_row(row):
+    reason = simplify_user_reason(row.get("Final_Decision_Reason", ""))
     return (
         f"{row.get('Ticker', ''):<8} | "
         f"{row.get('Final_Decision', ''):<34} | "
         f"Score {to_float(row.get('Score')):>5.1f} | "
         f"Close {to_float(row.get('Close')):>8.2f} | "
-        f"Reason: {row.get('Final_Decision_Reason', '')}"
+        f"Reason: {reason}"
     )
+
+
+def simplify_user_reason(reason):
+    reason = str(reason or "")
+    replacements = {
+        "distribution cluster": "selling pressure too high",
+        "below EMA200": "price below long-term trend",
+        "weekly downtrend": "weekly trend down",
+        "weekly mixed": "weekly trend not clear",
+        "weekly flat": "weekly trend flat",
+        "not outperforming SPY": "not beating market",
+        "excess volatility": "too volatile",
+        "below EMA20 with deep 20D-high pullback": "deep short-term pullback",
+        "below EMA20 with early 20D-high pullback": "early short-term pullback",
+        "lower high and lower low": "daily price structure weakening",
+        "pullback on above-average volume": "heavy-volume pullback",
+        "daily distribution below EMA20": "heavy selling below short-term trend",
+        "daily distribution": "heavy selling day",
+        "last 3H selling": "late-session selling",
+        "2+ bearish hourly candles": "multiple weak hourly candles",
+        "last 1H bearish": "final hour weak",
+        "relative volume below 1.0x": "not enough volume confirmation",
+        "RS excess below 5.0%": "market outperformance too weak",
+        "ATR above 10.0%": "too volatile for active momentum",
+        "5D extension above 12.0%": "too stretched over 5 days",
+        "10D extension above 20.0%": "too stretched over 10 days",
+        "close location below 50.0%": "closed weak within daily range",
+        "score below 85": "score too low",
+        "not qualified": "momentum not valid",
+        "all confirmation gates passed": "momentum active",
+    }
+    for old, new in replacements.items():
+        reason = reason.replace(old, new)
+    return reason
 
 
 def print_cli_summary(rows, output_path):
