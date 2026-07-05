@@ -80,7 +80,7 @@ CSV_FIELDS = [
     "External_Message", "Analyst_Message", "EPS_Message", "Event_Message",
     "Action_Status", "Score", "Action_Rank", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
     "Market_State", "Live_Price", "Regular_Market_Price", "PreMarket_Price", "PostMarket_Price",
-    "Extended_Hours_Change_Pct", "Close", "Trend_Score", "Relative_Strength_Score", "Breakout_Score",
+    "Extended_Hours_Change_Pct", "Close", "Trend_Score", "Relative_Strength_Score", "Breakout_Score", "Freshness_Score",
     "Accumulation_Score", "Volatility_Score", "Weekly_Trend_Score",
     "Weekly_Trend", "Weekly_Close", "Weekly_SMA_30", "Weekly_SMA_30_Slope_Pct_10W",
     "EMA_20", "EMA_50", "EMA_150", "EMA_200", "EMA_200_Slope_Pct_50D",
@@ -868,6 +868,24 @@ def score_v5(row):
     elif row["Distance_From_52W_High_Pct"] <= 20:
         scores["breakout"] += 4
 
+    freshness = 0
+    if pd.notna(row.get("Distance_From_20D_High_Pct", None)):
+        if row["Distance_From_20D_High_Pct"] <= 2:
+            freshness += 12
+        elif row["Distance_From_20D_High_Pct"] <= 5:
+            freshness += 8
+        elif row["Distance_From_20D_High_Pct"] <= 10:
+            freshness += 5
+        elif row["Distance_From_20D_High_Pct"] <= 20:
+            freshness += 2
+
+        if pd.notna(row.get("Return_5D_Pct", None)) and row["Return_5D_Pct"] > 15 and row["Distance_From_20D_High_Pct"] > 10:
+            freshness -= 4
+        if pd.notna(row.get("Return_10D_Pct", None)) and row["Return_10D_Pct"] > 20 and row["Distance_From_20D_High_Pct"] > 15:
+            freshness -= 5
+
+    scores["freshness"] = max(-10, min(15, freshness))
+
     if row["Net_Accumulation_50"] >= 3:
         scores["accumulation"] += 10
     elif row["Net_Accumulation_50"] > 0:
@@ -987,6 +1005,7 @@ def build_output_row(ticker, row, scores, weekly_trend, timing, long_term_status
         "Trend_Score": scores["trend"],
         "Relative_Strength_Score": scores["relative_strength"],
         "Breakout_Score": scores["breakout"],
+        "Freshness_Score": scores.get("freshness", 0),
         "Accumulation_Score": scores["accumulation"],
         "Volatility_Score": scores["volatility"],
         "Weekly_Trend_Score": scores["weekly_trend"],

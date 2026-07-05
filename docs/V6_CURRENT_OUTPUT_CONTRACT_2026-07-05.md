@@ -64,3 +64,13 @@ Low liquidity is a confirmation blocker. It can downgrade a technically strong r
 Do not convert the analyst message into a score component without a separate validation task.
 
 Any future external data source, including EPS revisions or earnings-date warnings, should first be added as post-decision text/audit output in V6 or later.
+
+## Freshness Scoring Note (2026-07-06)
+
+Implementation summary:
+
+- `Freshness_Score` field added to the CSV output and exposed in the `scores` dictionary.
+- The component is intentionally bounded (`-10` to `+15`) and is summed into the `raw` score before the existing 0-100 clamp.
+- The overall score capping behavior remains unchanged; no score can exceed `100` after the change.
+
+Operational note: if you want freshness to be advisory only (not part of the numeric `Score`), I can flip it to a non-summed label and add a separate `Freshness_Label` (e.g. `Fresh`, `Moderate`, `Stale`) to the output.
