@@ -73,4 +73,6 @@ Implementation summary:
 - The component is intentionally bounded (`-10` to `+15`) and is summed into the `raw` score before the existing 0-100 clamp.
 - The overall score capping behavior remains unchanged; no score can exceed `100` after the change.
 
+Note: Because `Freshness_Score` is summed into `scores["raw"]`, it therefore contributes to the final reported `Score` (after the existing 0..100 clamp). In short, `Freshness_Score` is part of the numeric `Score` reported in the CSV output.
+
 Operational note: if you want freshness to be advisory only (not part of the numeric `Score`), I can flip it to a non-summed label and add a separate `Freshness_Label` (e.g. `Fresh`, `Moderate`, `Stale`) to the output.
