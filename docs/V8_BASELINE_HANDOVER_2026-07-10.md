@@ -45,6 +45,12 @@ Core score calculation, decision rules, live-price handling, and append-log/fina
 
 V8 now contains the development Beta post-processor, a traceable historical replay runner, a read-only offline random-sample validator, message-map configuration, and unit tests. The ETF post-processor is not implemented.
 
+The canonical first pilot and preliminary findings are recorded in:
+
+```text
+docs/V8_BETA_RELEASE1_PILOT_2026-07-10.md
+```
+
 Required work before operational signoff:
 
 1. Complete the broader chronological Beta development/validation/holdout study.

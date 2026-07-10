@@ -138,7 +138,13 @@ Implementation status on 2026-07-10:
 - The semantic Active trigger references `CONFIRMED_ENTRY_MIN_SCORE`; CLI summary controls are not inputs.
 - The Beta processor does not write `Score` or change a final decision.
 - The backtest stores price inputs, benchmark inputs, source snapshots, a universe snapshot, manifests, checksums, full signal/daily audits, interaction summaries, and deterministic random-validation samples.
-- A first pilot replay has been initiated. Pilot results are research evidence only and do not sign off the Beta track.
+- A first pilot replay and its 50-row deterministic offline validation are complete. Pilot results are research evidence only and do not sign off the Beta track.
+
+Canonical pilot report:
+
+```text
+docs/V8_BETA_RELEASE1_PILOT_2026-07-10.md
+```
 
 ## Track 2: Direct ETF Mapping Release
 
