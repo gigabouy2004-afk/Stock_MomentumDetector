@@ -11,11 +11,12 @@ from pathlib import Path
 import pandas as pd
 import yfinance as yf
 
-DEFAULT_COUNT_X = 2     # Default max rows to output
-DEFAULT_SCORE_Y = 50.0    # Default minimum score threshold
+DEFAULT_COUNT_X = 5       # Default max rows in the final summary
+DEFAULT_SCORE_Y = 0.0     # Default minimum score included in the final summary
 
 BASE_FOLDER = "D:/Tools/Stock_MomentumDetector"
-EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, "Processed_Data","V7_Momentum_Execution_Dump.csv")
+SUMMARY_OUTPUT_CSV = os.path.join(BASE_FOLDER, "Processed_Data", "V7_Momentum_Execution_Dump.csv")
+EXECUTION_LOG_CSV = os.path.join(BASE_FOLDER, "Processed_Data", "V7_Momentum_Execution_Log.csv")
 TICKER_INPUT_CSV = Path("D:/Tools/StockCodeMaster/02_Stock/01-07-US_Common_Stocks_Master_Library.csv")
 
 LOOKBACK_WINDOW = "5y"
@@ -45,6 +46,7 @@ CONFIRMED_ENTRY_MAX_5D_RETURN_PCT = 18.0
 CONFIRMED_ENTRY_MAX_10D_RETURN_PCT = 30.0
 CONFIRMED_ENTRY_MIN_REL_VOLUME_20 = 0.75
 CONFIRMED_ENTRY_MIN_CLOSE_LOCATION_PCT = 50.0
+REJECT_SCORE_CAP = 49
 
 STATUS_SORT_RANK = {
     "Momentum Candidate": 0,
@@ -82,7 +84,7 @@ FINAL_DECISION_RANK = {
 FINAL_DECISION_SCORE_CAP = {
     "MOMENTUM_ACTIVE": 100,
     "MOMENTUM_PRESENT_WAIT_CONFIRMATION": CONFIRMED_ENTRY_MIN_SCORE - 1,
-    "REJECT": DEFAULT_SCORE_Y - 1,
+    "REJECT": REJECT_SCORE_CAP,
 }
 
 CSV_FIELDS = [
@@ -106,6 +108,8 @@ CSV_FIELDS = [
     "Distribution_Days_50", "Net_Accumulation_50", "Latest_Distribution_Day",
     "Daily_Change_Pct", "Last_3H_Return_Pct", "Bearish_1H_Candles_Last3", "Last_1H_Bearish",
 ]
+
+EXECUTION_LOG_FIELDS = ["Run_ID", "Processed_At", *CSV_FIELDS]
 
 
 def clean_number(value):
@@ -161,7 +165,7 @@ def timestamped_output_path(path):
     return f"{base}_{timestamp}{ext}"
 
 
-def write_execution_log(rows, output_path=EXECUTION_LOG_CSV, force_unique=False):
+def write_summary_output(rows, output_path=SUMMARY_OUTPUT_CSV, force_unique=False):
     sorted_rows = sort_output_rows(rows)
     if force_unique:
         output_path = timestamped_output_path(output_path)
@@ -182,6 +186,46 @@ def write_execution_log(rows, output_path=EXECUTION_LOG_CSV, force_unique=False)
             writer.writerow({field: clean_number(row.get(field, "")) for field in CSV_FIELDS})
 
     return output_path, sorted_rows
+
+
+def initialize_execution_log(output_path=EXECUTION_LOG_CSV):
+    output_path = os.path.abspath(output_path)
+    output_dir = os.path.dirname(output_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+
+    has_content = os.path.exists(output_path) and os.path.getsize(output_path) > 0
+    if has_content:
+        with open(output_path, "r", encoding="utf-8", newline="") as file:
+            existing_header = next(csv.reader(file), [])
+        if existing_header != EXECUTION_LOG_FIELDS:
+            raise ValueError(
+                f"Execution log header does not match the current V7 schema: {output_path}"
+            )
+        return output_path
+
+    with open(output_path, "a", encoding="utf-8", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=EXECUTION_LOG_FIELDS)
+        writer.writeheader()
+        file.flush()
+        os.fsync(file.fileno())
+    return output_path
+
+
+def append_execution_log_row(row, run_id, output_path=EXECUTION_LOG_CSV):
+    output_path = os.path.abspath(output_path)
+    log_row = {
+        "Run_ID": run_id,
+        "Processed_At": datetime.now().astimezone().isoformat(timespec="seconds"),
+    }
+    log_row.update({field: clean_number(row.get(field, "")) for field in CSV_FIELDS})
+
+    with open(output_path, "a", encoding="utf-8", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=EXECUTION_LOG_FIELDS)
+        writer.writerow(log_row)
+        file.flush()
+        os.fsync(file.fileno())
+    return output_path
 
 
 def format_summary_row(row):
@@ -237,7 +281,7 @@ def simplify_user_reason(reason):
     return reason
 
 
-def print_cli_summary(rows, output_path):
+def print_cli_summary(rows, output_path, execution_log_path, total_processed):
     decisions = ["MOMENTUM_ACTIVE", "MOMENTUM_PRESENT_WAIT_CONFIRMATION", "REJECT"]
     counts = {decision: 0 for decision in decisions}
     for row in rows:
@@ -247,7 +291,8 @@ def print_cli_summary(rows, output_path):
     print("============================================================")
     print("=== MOMENTUM DETECTOR V7 COMPLETE ===")
     print("============================================================")
-    print(f"Total Processed : {len(rows)}")
+    print(f"Total Processed : {total_processed}")
+    print(f"Summary Rows    : {len(rows)}")
     print(f"MOMENTUM_ACTIVE : {counts.get('MOMENTUM_ACTIVE', 0)}")
     print(f"WAIT_CONFIRM    : {counts.get('MOMENTUM_PRESENT_WAIT_CONFIRMATION', 0)}")
     print(f"REJECT          : {counts.get('REJECT', 0)}")
@@ -256,7 +301,8 @@ def print_cli_summary(rows, output_path):
     for row in rows:
         print(format_summary_row(row))
 
-    print(f"\nOutput CSV: {output_path}")
+    print(f"\nExecution Log CSV: {execution_log_path}")
+    print(f"Summary Output CSV: {output_path}")
 
 
 def parse_ticker_values(values):
@@ -292,6 +338,7 @@ def build_status_row(ticker, long_term_status, entry_timing_status, reason=""):
         "Final_Decision": final_decision,
         "Final_Decision_Rank": final_rank,
         "Final_Decision_Reason": final_reason,
+        "Score": 0,
         "Action_Rank": action_rank,
         "Action_Status": action_status,
         "Long_Term_Status": long_term_status,
@@ -777,8 +824,8 @@ def resolve_final_decision(row, scores, weekly_trend, timing, long_term_status, 
 
 
 def score_for_final_decision(score, final_decision):
-    score = to_float(score)
-    cap = FINAL_DECISION_SCORE_CAP.get(final_decision, 0)
+    score = min(100.0, max(0.0, to_float(score)))
+    cap = min(100.0, max(0.0, to_float(FINAL_DECISION_SCORE_CAP.get(final_decision, 0))))
     return min(score, cap)
 
 
@@ -1095,58 +1142,69 @@ def run_scan(args, tickers, force_unique_output=False):
     benchmark_cache = {}
     quote_cache = {}
     rows = []
+    total_processed = 0
+    run_id = datetime.now().strftime("V7_%Y%m%d_%H%M%S_%f")
+    execution_log_path = initialize_execution_log(getattr(args, "log_output", EXECUTION_LOG_CSV))
 
     print(f"Starting Scan (V7) | Filter: Top {args.count_x} rows with Score >= {args.score_y}...")
+    print(f"Append-only execution log: {execution_log_path}")
 
     for ticker in tickers:
         print(f"Processing {ticker}...")
         time.sleep(API_DELAY_SECONDS)
+        output = None
         try:
             df = fetch_daily_data(ticker, LOOKBACK_WINDOW)
             if df.empty:
-                rows.append(build_status_row(ticker, "Avoid", "No market data", "no market data - check symbol"))
-                continue
-            quote = fetch_live_quote(ticker)
-            df = apply_live_price_to_daily_data(df, quote)
-            exchange_profile = exchange_profile_for_ticker(ticker, args.market)
-            benchmark_ticker = benchmark_for_ticker(ticker, args.market, args.us_benchmark)
-            if benchmark_ticker not in benchmark_cache:
-                benchmark_cache[benchmark_ticker] = fetch_daily_data(benchmark_ticker, LOOKBACK_WINDOW)
-            if benchmark_ticker not in quote_cache:
-                quote_cache[benchmark_ticker] = fetch_live_quote(benchmark_ticker)
-            benchmark_df = benchmark_cache[benchmark_ticker]
-            if benchmark_df.empty:
-                rows.append(build_status_row(ticker, "Avoid", "No benchmark data", f"no benchmark data - check {benchmark_ticker}"))
-                continue
-            benchmark_df = apply_live_price_to_daily_data(benchmark_df, quote_cache[benchmark_ticker])
-            calc_df = calculate_v5_indicators(
-                df,
-                benchmark_df,
-                benchmark_ticker=benchmark_ticker,
-                exchange_profile=exchange_profile,
-            )
-            timing = evaluate_intraday_timing(calc_df, fetch_hourly_data(ticker), quote)
-            row = calc_df.iloc[-1]
-            scores, weekly_trend = score_v5(row)
-            scores = apply_commercial_readiness_score(row, scores, weekly_trend, timing)
-            long_term_status, reason = classify_signal(row, scores, weekly_trend, timing)
+                output = build_status_row(ticker, "Avoid", "No market data", "no market data - check symbol")
+            else:
+                quote = fetch_live_quote(ticker)
+                df = apply_live_price_to_daily_data(df, quote)
+                exchange_profile = exchange_profile_for_ticker(ticker, args.market)
+                benchmark_ticker = benchmark_for_ticker(ticker, args.market, args.us_benchmark)
+                if benchmark_ticker not in benchmark_cache:
+                    benchmark_cache[benchmark_ticker] = fetch_daily_data(benchmark_ticker, LOOKBACK_WINDOW)
+                if benchmark_ticker not in quote_cache:
+                    quote_cache[benchmark_ticker] = fetch_live_quote(benchmark_ticker)
+                benchmark_df = benchmark_cache[benchmark_ticker]
+                if benchmark_df.empty:
+                    output = build_status_row(
+                        ticker,
+                        "Avoid",
+                        "No benchmark data",
+                        f"no benchmark data - check {benchmark_ticker}",
+                    )
+                else:
+                    benchmark_df = apply_live_price_to_daily_data(benchmark_df, quote_cache[benchmark_ticker])
+                    calc_df = calculate_v5_indicators(
+                        df,
+                        benchmark_df,
+                        benchmark_ticker=benchmark_ticker,
+                        exchange_profile=exchange_profile,
+                    )
+                    timing = evaluate_intraday_timing(calc_df, fetch_hourly_data(ticker), quote)
+                    row = calc_df.iloc[-1]
+                    scores, weekly_trend = score_v5(row)
+                    scores = apply_commercial_readiness_score(row, scores, weekly_trend, timing)
+                    long_term_status, reason = classify_signal(row, scores, weekly_trend, timing)
 
-            output = build_output_row(ticker, row, scores, weekly_trend, timing, long_term_status, reason)
+                    output = build_output_row(ticker, row, scores, weekly_trend, timing, long_term_status, reason)
 
-            if float(output.get("Score", 0)) < args.score_y:
-                continue
-
-            if output["Final_Decision"] == "MOMENTUM_ACTIVE":
-                output.update(fetch_external_messages(ticker, output.get("Close")))
-
-            rows.append(output)
+                    if output["Final_Decision"] == "MOMENTUM_ACTIVE":
+                        output.update(fetch_external_messages(ticker, output.get("Close")))
 
         except Exception as exc:
-            rows.append(build_status_row(ticker, "Avoid", f"Error: {exc}", str(exc)))
+            output = build_status_row(ticker, "Avoid", f"Error: {exc}", str(exc))
+
+        append_execution_log_row(output, run_id, execution_log_path)
+        total_processed += 1
+
+        if float(output.get("Score", 0)) >= args.score_y:
+            rows.append(output)
 
     sorted_rows = sort_output_rows(rows)[:args.count_x]
-    output_path, sorted_rows = write_execution_log(sorted_rows, args.output, force_unique=force_unique_output)
-    print_cli_summary(sorted_rows, output_path)
+    output_path, sorted_rows = write_summary_output(sorted_rows, args.output, force_unique=force_unique_output)
+    print_cli_summary(sorted_rows, output_path, execution_log_path, total_processed)
     return output_path, sorted_rows
 
 
@@ -1177,7 +1235,12 @@ def main():
     parser.add_argument("--ticker-csv", default=TICKER_INPUT_CSV, help="CSV file for ticker list.")
     parser.add_argument("--market", choices=["auto", "us", "nse"], default="auto", help="Market exchange.")
     parser.add_argument("--us-benchmark", default=US_DEFAULT_BENCHMARK, help="Benchmark ticker.")
-    parser.add_argument("--output", default=EXECUTION_LOG_CSV, help="Output file path.")
+    parser.add_argument("--output", default=SUMMARY_OUTPUT_CSV, help="Final top-X summary CSV path.")
+    parser.add_argument(
+        "--log-output",
+        default=EXECUTION_LOG_CSV,
+        help="Append-only per-ticker execution log CSV path.",
+    )
 
     # NEW V7 CLI Enhancements
     parser.add_argument("--count-x", type=int, default=DEFAULT_COUNT_X,
@@ -1194,6 +1257,10 @@ def main():
                         help="Write timestamped output files instead of overwriting the selected output path.")
 
     args = parser.parse_args()
+    if not 0 <= args.score_y <= 100:
+        parser.error("--score-y must be between 0 and 100.")
+    if args.count_x < 1:
+        parser.error("--count-x must be at least 1.")
     explicit_output = args.output != parser.get_default("output")
 
     tickers, ticker_source = resolve_tickers(args.tickers, args.ticker_csv, args.positional_tickers)

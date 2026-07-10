@@ -16,6 +16,70 @@ In V7, `Score` is a final user-facing confidence score. It must not contradict `
 | `MOMENTUM_PRESENT_WAIT_CONFIRMATION` | Momentum/setup may be present, but immediate confirmation is missing. | 84 |
 | `REJECT` | Not valid for momentum action. | 49 |
 
+## Score Range And Summary Filter
+
+Published `Score` is always constrained to the inclusive range `0..100`.
+
+`--score-y` is only the minimum score included in the final top-X summary. It does not define or alter any final-decision score cap.
+
+For example:
+
+```text
+--score-y 0
+```
+
+means the final summary may select from all rows whose published score is zero or higher. It must never produce a score of `-1`.
+
+The fixed caps remain:
+
+```text
+MOMENTUM_ACTIVE:                 100 maximum
+MOMENTUM_PRESENT_WAIT_CONFIRMATION: 84 maximum
+REJECT:                          49 maximum
+```
+
+## Execution Log And Final Summary
+
+V7 produces two different CSV artifacts.
+
+### Append-only execution log
+
+Default path:
+
+```text
+D:/Tools/Stock_MomentumDetector/Processed_Data/V7_Momentum_Execution_Log.csv
+```
+
+Behavior:
+
+- Opened in append mode.
+- Contains one complete row for every processed ticker, including rows below `--score-y`, no-data rows, and error rows.
+- Written, flushed, synchronized, and closed after every ticker.
+- Can be opened read-only by another application while the scan is still running.
+- Includes `Run_ID` and `Processed_At` before the complete V7 output fields.
+- Preserves earlier runs; `Run_ID` separates rows from different executions.
+
+The path can be changed with:
+
+```text
+--log-output <path>
+```
+
+### Final summary output
+
+Default base path:
+
+```text
+D:/Tools/Stock_MomentumDetector/Processed_Data/V7_Momentum_Execution_Dump.csv
+```
+
+Behavior:
+
+- Written after the complete scan finishes.
+- Contains only the final sorted top `--count-x` rows selected from scores satisfying `Score >= --score-y`.
+- Remains separate from the continuously updated execution log.
+- Uses `--output <path>` to select a different final summary location.
+
 The technical component fields remain available for audit:
 
 - `Trend_Score`
