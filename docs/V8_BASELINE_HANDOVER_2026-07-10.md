@@ -39,6 +39,7 @@ Core score calculation, decision rules, live-price handling, and the new append-
 - Every processed ticker is appended to the full execution log before summary filtering.
 - The execution log is readable during a scan when the reader uses non-exclusive read access.
 - Final summary generation remains an end-of-run operation.
+- Post-processor eligibility is based on `MOMENTUM_ACTIVE` plus the programmed `CONFIRMED_ENTRY_MIN_SCORE`, never on CLI summary filters.
 
 ## Development Status
 

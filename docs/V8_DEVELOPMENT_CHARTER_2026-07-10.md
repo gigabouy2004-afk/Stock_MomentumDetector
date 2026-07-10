@@ -37,11 +37,17 @@ Score_Message
 
 Initial V8 post-processors do not create a second action score and do not modify the finalized core `Score`.
 
-Post-processing begins only after the core engine has finalized:
+Post-processing begins only after the core engine has finalized Active Momentum:
 
 ```text
-Score >= 85
+Final_Decision == MOMENTUM_ACTIVE
+AND
+Score >= CONFIRMED_ENTRY_MIN_SCORE
 ```
+
+`CONFIRMED_ENTRY_MIN_SCORE` is currently `85`. Post-processors reference that programmed constant and the semantic Active decision; they do not hard-code a separate threshold.
+
+CLI values such as `--score-y` and `--count-x` are tactical presentation controls only. Changing either CLI value must not enable or suppress Beta or ETF post-processing.
 
 ## V7 Freeze Boundary
 
@@ -137,7 +143,7 @@ docs/V7_BETA_ETF_ACTIVE_POSTPROCESSOR_PLAN_2026-07-10.md
 
 Required behavior:
 
-- Called only for finalized `Score >= 85`.
+- Called only for finalized `MOMENTUM_ACTIVE` rows that satisfy the programmed `CONFIRMED_ENTRY_MIN_SCORE`.
 - Direct stock-to-ETF reverse lookup.
 - USA-listed ETFs only.
 - Stock must be a top-ten holding in the returned ETF.
@@ -178,7 +184,7 @@ V8 cannot replace V7 until all gates pass:
 
 ### Combined V8 gate
 
-- Beta and ETF processors work together for `Score >= 85` only.
+- Beta and ETF processors work together only for finalized `MOMENTUM_ACTIVE` rows meeting the programmed Active threshold.
 - Score and core V7-derived decisions remain regression-safe.
 - V8 output contract and handover are complete.
 - Syntax, unit, integration, offline replay, and representative live tests pass.

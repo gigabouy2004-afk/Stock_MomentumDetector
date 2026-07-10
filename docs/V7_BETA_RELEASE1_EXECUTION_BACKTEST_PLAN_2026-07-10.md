@@ -16,7 +16,7 @@ Determine whether Beta adds useful explanatory context after the V7 engine has a
 
 The study must answer:
 
-1. Do stocks with different Beta values behave differently after V7 identifies active momentum at `Score >= 85`?
+1. Do stocks with different Beta values behave differently after the engine identifies `MOMENTUM_ACTIVE` under its programmed confirmation threshold?
 2. Is Beta linked to actual subsequent price variation, continuation, drawdown, and realized volatility?
 3. Does that relationship change by sector, industry, market-cap group, or broad-market regime?
 4. Is the observed momentum primarily benchmark-driven or stock-specific residual momentum?
@@ -28,10 +28,12 @@ The study will not award or remove momentum points. `Score` remains unchanged th
 
 ### Primary population
 
-Historical V7 signals whose finalized replay score is:
+Historical signals whose finalized replay decision is:
 
 ```text
-Score >= 85
+Final_Decision == MOMENTUM_ACTIVE
+AND
+Score >= CONFIRMED_ENTRY_MIN_SCORE
 ```
 
 This is the production post-processor population.
@@ -53,9 +55,9 @@ Use a momentum episode rather than every qualifying day.
 An episode begins when:
 
 ```text
-Today's finalized Score >= 85
+Today's Final_Decision == MOMENTUM_ACTIVE
 AND
-the prior eligible trading day's Score < 85
+the prior eligible trading day's Final_Decision != MOMENTUM_ACTIVE
 ```
 
 If a stock remains continuously active, do not count every day as a new independent signal. Secondary snapshots may be taken every 21 trading days and must be labeled separately.
@@ -80,7 +82,7 @@ Every backtest run must compare baseline and Beta-enriched scoring fields byte-f
 `Backtest_Momentum_Detector_V6.py` is a useful reference but is not sufficient as the Release 1 runner because it:
 
 - Imports V6 rather than V7.
-- Selects long-term candidate labels instead of the finalized `Score >= 85` contract.
+- Selects long-term candidate labels instead of the finalized semantic `MOMENTUM_ACTIVE` contract.
 - Assumes clean historical timing without a sufficiently explicit limitation field.
 - Skips forward by 21 days after any candidate rather than defining an episode transition.
 - Writes two fixed CSV files and overwrites prior runs.
@@ -803,7 +805,7 @@ No unvalidated allocation implication will be added.
 11. Run final chronological holdout and three offline random rounds.
 12. Produce the research summary and signoff package.
 13. Stop for user review.
-14. Only after signoff, integrate Beta into `Score_Message` for live `Score >= 85` rows.
+14. Only after signoff, integrate Beta into `Score_Message` for live `MOMENTUM_ACTIVE` rows meeting the programmed threshold.
 
 ## Pilot Scope
 
@@ -821,7 +823,7 @@ ACA
 MATX
 ```
 
-These are candidates, not guaranteed research rows. A ticker/date enters the active cohort only when the frozen V7 replay produces `Score >= 85` and all required history is available.
+These are candidates, not guaranteed research rows. A ticker/date enters the active cohort only when the frozen replay produces `MOMENTUM_ACTIVE`, meets `CONFIRMED_ENTRY_MIN_SCORE`, and has all required history.
 
 The pilot should include:
 

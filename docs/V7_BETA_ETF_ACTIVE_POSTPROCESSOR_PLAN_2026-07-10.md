@@ -25,14 +25,17 @@ Detailed beta and API fields may be written to backtest/audit outputs, but the o
 
 ## Production Trigger
 
-Post-processing starts only after V7 has finalized the published score:
+Post-processing starts only after the engine has finalized the semantic Active Momentum decision:
 
 ```text
-if Score >= 85:
+if (
+    Final_Decision == MOMENTUM_ACTIVE
+    and Score >= CONFIRMED_ENTRY_MIN_SCORE
+):
     run approved post-processors
 ```
 
-The current baseline is `85`, sourced from `CONFIRMED_ENTRY_MIN_SCORE` rather than duplicated as an unrelated magic number.
+The current programmed Active baseline is `85`. Post-processors reference `CONFIRMED_ENTRY_MIN_SCORE`; they do not maintain an independent hard-coded threshold.
 
 This trigger uses `Score` alone because `Score` is the user's authoritative action column. Under the V7 output contract:
 
@@ -41,7 +44,7 @@ MOMENTUM_PRESENT_WAIT_CONFIRMATION <= 84
 REJECT < the normal output threshold
 ```
 
-Therefore, `Score >= 85` should already imply active momentum. `Final_Decision` remains available internally as a consistency assertion, not as a second user action field.
+`Final_Decision` is the internal semantic trigger because it confirms that the score and every other Active Momentum gate passed. It remains an audit field rather than a second user action value.
 
 Required invariant test:
 
@@ -51,7 +54,7 @@ Score >= 85  =>  Final_Decision == MOMENTUM_ACTIVE
 
 If that invariant fails, the row is logged as a contract error and post-processing is skipped until the core result is reconciled.
 
-The CLI display filter `--score-y` does not control post-processing. The active threshold remains the engine's confirmed-entry threshold.
+The CLI display controls `--score-y` and `--count-x` do not control post-processing. They may hide or show rows in the final summary, but they cannot enable or suppress Beta/ETF processing.
 
 ## Approved Release Order
 
@@ -323,7 +326,7 @@ If predictive evidence is weak, Beta Release 1 remains factual/informational in 
 
 ### Required behavior
 
-ETF mapping is called only for a stock whose finalized `Score >= 85`.
+ETF mapping is called only for a finalized `MOMENTUM_ACTIVE` stock meeting `CONFIRMED_ENTRY_MIN_SCORE`.
 
 Required user-facing function:
 
@@ -457,9 +460,10 @@ The user still acts on one numeric field: `Score`.
 ## Integration Tests
 
 ```text
-Score 84 -> no post-processor call
-Score 85 -> Beta called once
-Score 85 with Final_Decision not active -> contract error; skip enrichment
+WAIT/REJECT at any Score -> no post-processor call
+MOMENTUM_ACTIVE at programmed threshold -> Beta called once
+Score at/above threshold with Final_Decision not active -> no Beta call; contract audit if the score cap invariant is violated
+Changing --score-y/--count-x -> no change to post-processor calls
 Beta failure -> Score unchanged; context-unavailable string
 Message template changed -> calculation output unchanged
 ETF Release disabled -> no ETF API request
@@ -479,7 +483,7 @@ Any post-processor failure -> Score byte-for-byte unchanged
 - Enforce the existing 300-bar minimum-history intent.
 - Resolve the pandas `pct_change` warnings with explicit missing-value semantics.
 - Freeze V7 score contract fixtures.
-- Add the `Score >= 85`/active-decision invariant test.
+- Add the programmed-threshold/active-decision invariant test.
 - Create the message-template schema.
 
 ### Phase 1A: Beta research implementation
@@ -549,7 +553,7 @@ Only this revised plan document is part of the current task.
 ## Decisions Recorded From User Review
 
 1. `Score` is the single action column.
-2. Post-processing begins at finalized `Score >= 85`.
+2. Post-processing begins only for finalized `MOMENTUM_ACTIVE` rows meeting the programmed `CONFIRMED_ENTRY_MIN_SCORE`; CLI filters are unrelated.
 3. One additional user-facing string column, `Score_Message`, explains the score.
 4. Message wording comes from a configurable lookup table.
 5. Beta is Release 1 and requires full backtesting and signoff.

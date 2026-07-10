@@ -14,6 +14,29 @@ CONFIRMED_ENTRY_MIN_SCORE = 85
 
 `DEFAULT_SCORE_Y` controls only the final summary inclusion threshold. It does not define or modify any final-decision score cap.
 
+## Post-Processor Trigger Contract
+
+Beta and future ETF post-processing are triggered by the core engine's programmed Active Momentum decision:
+
+```text
+Final_Decision == MOMENTUM_ACTIVE
+AND
+Score >= CONFIRMED_ENTRY_MIN_SCORE
+```
+
+The current programmed Active threshold is `85`.
+
+The post-processors must reference `CONFIRMED_ENTRY_MIN_SCORE`, so a future reviewed change to the core Active threshold automatically carries into post-processing eligibility.
+
+The following CLI values do not participate in the trigger:
+
+```text
+--score-y
+--count-x
+```
+
+They control only final-summary presentation. An Active row remains eligible for Beta even if a tactical `--score-y` value hides it from the final summary; a rejected/waiting row never becomes Beta-eligible merely because `--score-y` is lowered.
+
 ## Score Contract
 
 Published `Score` is always constrained to the inclusive range `0..100`.
