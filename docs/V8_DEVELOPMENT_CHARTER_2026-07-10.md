@@ -55,45 +55,43 @@ V8 must start from an explicitly recorded V7 source snapshot and then diverge on
 
 Any future critical V7 production issue requires a separate explicit decision. It must not be mixed into V8 feature work.
 
-## V7 Fork-Baseline Decision Required
+## V7 Fork-Baseline Decision Resolved
 
-The repository audit found two possible V7 source baselines.
-
-### A. Committed V7 engine
+The user approved the V8 defaults:
 
 ```text
-Last V7 engine commit:
-cf50474b4be3601ee3b019af93f0de63d3130aed
-
-Tracked V7 blob:
-f5af768dcbf8cf25e0eaa9bf98428483c13e3aaa
-
-DEFAULT_COUNT_X = 2
-DEFAULT_SCORE_Y = 50.0
-```
-
-### B. Current local operational V7 file
-
-```text
-Working-tree V7 blob:
-9f38de05fb490eb5fde9cb50915534cc76c4ec1f
-
 DEFAULT_COUNT_X = 5
 DEFAULT_SCORE_Y = 75.0
 ```
 
-The only current V7 code difference is the two default values above.
+V8 was created from the corrected V7 implementation committed as:
 
-Before `Momentum_Detector_V8.py` is created, the user must confirm whether V8 inherits baseline A or B. The V7 file itself will not be changed or committed as part of that choice; the selected snapshot will be copied into a new V8 file and recorded in the V8 manifest.
+```text
+9a4b0ba Fix V7 score range and append-only execution log
+```
 
-Recommended interpretation for review: baseline B reflects the most recent local runtime behavior, while baseline A is the last Git-tracked engine state.
+The V8 baseline inherits:
+
+- Published Score constrained to `0..100`.
+- Fixed final-decision score caps independent of the summary filter.
+- REJECT maximum of `49`.
+- One append-only full execution-log row per processed ticker.
+- A separate final top-X summary written after the scan.
+- Run IDs and per-row processing timestamps in the execution log.
+
+V8 deliberately changes the default final-summary threshold from the V7 diagnostic value of `0` to the approved V8 operational-development value of `75`.
 
 ## V8 File Boundary
 
-Planned V8 implementation files:
+Current V8 baseline file:
 
 ```text
 Momentum_Detector_V8.py
+```
+
+Planned V8 feature implementation files:
+
+```text
 Momentum_Active_PostProcessor_V8.py
 Beta_Context_V8.py
 ETF_Context_V8.py
@@ -203,4 +201,3 @@ V7 = FROZEN LEGACY BASELINE
 ```
 
 The transition must be an explicit version switch. Development results alone do not make V8 operational.
-
