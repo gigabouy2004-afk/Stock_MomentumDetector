@@ -11,6 +11,8 @@ from pathlib import Path
 import pandas as pd
 import yfinance as yf
 
+from Beta_Context_V8 import apply_beta_postprocessor
+
 DEFAULT_COUNT_X = 5       # Default max rows in the final summary
 DEFAULT_SCORE_Y = 75.0    # Default minimum score included in the final summary
 
@@ -90,7 +92,7 @@ FINAL_DECISION_SCORE_CAP = {
 CSV_FIELDS = [
     "Ticker", "Final_Decision", "Final_Decision_Rank", "Final_Decision_Reason",
     "External_Message", "Analyst_Message", "EPS_Message", "Event_Message",
-    "Action_Status", "Score", "Action_Rank", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
+    "Action_Status", "Score", "Score_Message", "Action_Rank", "Long_Term_Status", "Entry_Timing_Status", "Classification_Reason",
     "Market_State", "Live_Price", "Regular_Market_Price", "PreMarket_Price", "PostMarket_Price",
     "Regular_Session_Close", "Score_Price_Source", "Score_Price_Change_Pct",
     "Extended_Hours_Change_Pct", "Close", "Trend_Score", "Relative_Strength_Score", "Breakout_Score", "Freshness_Score",
@@ -700,13 +702,13 @@ def calculate_v5_indicators(
     df["EMA_50"] = ema(close, 50)
     df["EMA_150"] = ema(close, 150)
     df["EMA_200"] = ema(close, 200)
-    df["EMA_200_Slope_Pct_50D"] = df["EMA_200"].pct_change(50) * 100
+    df["EMA_200_Slope_Pct_50D"] = df["EMA_200"].pct_change(50, fill_method=None) * 100
 
-    df["Return_5D_Pct"] = close.pct_change(5) * 100
-    df["Return_10D_Pct"] = close.pct_change(10) * 100
-    df["Return_63D_Pct"] = close.pct_change(63) * 100
-    df["Return_126D_Pct"] = close.pct_change(126) * 100
-    df["Return_252D_Pct"] = close.pct_change(252) * 100
+    df["Return_5D_Pct"] = close.pct_change(5, fill_method=None) * 100
+    df["Return_10D_Pct"] = close.pct_change(10, fill_method=None) * 100
+    df["Return_63D_Pct"] = close.pct_change(63, fill_method=None) * 100
+    df["Return_126D_Pct"] = close.pct_change(126, fill_method=None) * 100
+    df["Return_252D_Pct"] = close.pct_change(252, fill_method=None) * 100
     df["Extension_Risk"] = (df["Return_5D_Pct"] > CONFIRMED_ENTRY_MAX_5D_RETURN_PCT) | (df["Return_10D_Pct"] > CONFIRMED_ENTRY_MAX_10D_RETURN_PCT)
 
     df["High_20D"] = df["High"].rolling(20).max()
@@ -732,7 +734,7 @@ def calculate_v5_indicators(
     df["Close_Location_Pct"] = ((close - df["Low"]) / daily_range) * 100
     df.loc[daily_range == 0, "Close_Location_Pct"] = 50.0
 
-    daily_change = close.pct_change() * 100
+    daily_change = close.pct_change(fill_method=None) * 100
     df["Daily_Change_Pct"] = daily_change
     df["Accumulation_Day"] = (daily_change >= 1.0) & (volume > df["Volume_Avg_50"])
     df["Distribution_Day"] = (daily_change <= -1.0) & (volume > df["Volume_Avg_50"])
@@ -744,16 +746,16 @@ def calculate_v5_indicators(
     benchmark_close = benchmark_df["Close"].reindex(df.index).ffill()
     df["Exchange_Profile"] = exchange_profile
     df["Benchmark_Ticker"] = benchmark_ticker
-    df["Benchmark_Return_126D_Pct"] = benchmark_close.pct_change(126) * 100
+    df["Benchmark_Return_126D_Pct"] = benchmark_close.pct_change(126, fill_method=None) * 100
     df["RS_126D_Excess_Pct"] = df["Return_126D_Pct"] - df["Benchmark_Return_126D_Pct"]
     df["RS_Ratio"] = close / benchmark_close
     df["RS_SMA_50"] = df["RS_Ratio"].rolling(50).mean()
     df["RS_SMA_200"] = df["RS_Ratio"].rolling(200).mean()
-    df["RS_Slope_Pct_50D"] = df["RS_Ratio"].pct_change(50) * 100
+    df["RS_Slope_Pct_50D"] = df["RS_Ratio"].pct_change(50, fill_method=None) * 100
 
     weekly = df.resample("W-FRI").agg({"Open": "first", "High": "max", "Low": "min", "Close": "last", "Volume": "sum"}).dropna()
     weekly["Weekly_SMA_30"] = weekly["Close"].rolling(30).mean()
-    weekly["Weekly_SMA_30_Slope_Pct_10W"] = weekly["Weekly_SMA_30"].pct_change(10) * 100
+    weekly["Weekly_SMA_30_Slope_Pct_10W"] = weekly["Weekly_SMA_30"].pct_change(10, fill_method=None) * 100
     weekly_fields = weekly[["Close", "Weekly_SMA_30", "Weekly_SMA_30_Slope_Pct_10W"]].rename(columns={"Close": "Weekly_Close"})
     df = df.join(weekly_fields.reindex(df.index, method="ffill"))
 
@@ -1157,6 +1159,13 @@ def run_scan(args, tickers, force_unique_output=False):
             df = fetch_daily_data(ticker, LOOKBACK_WINDOW)
             if df.empty:
                 output = build_status_row(ticker, "Avoid", "No market data", "no market data - check symbol")
+            elif len(df) < MIN_HISTORY_BARS:
+                output = build_status_row(
+                    ticker,
+                    "Avoid",
+                    "Insufficient history",
+                    f"insufficient price history ({len(df)} bars; {MIN_HISTORY_BARS} required)",
+                )
             else:
                 quote = fetch_live_quote(ticker)
                 df = apply_live_price_to_daily_data(df, quote)
@@ -1189,6 +1198,14 @@ def run_scan(args, tickers, force_unique_output=False):
                     long_term_status, reason = classify_signal(row, scores, weekly_trend, timing)
 
                     output = build_output_row(ticker, row, scores, weekly_trend, timing, long_term_status, reason)
+
+                    apply_beta_postprocessor(
+                        output,
+                        df,
+                        benchmark_df,
+                        benchmark_ticker,
+                        active_threshold=CONFIRMED_ENTRY_MIN_SCORE,
+                    )
 
                     if output["Final_Decision"] == "MOMENTUM_ACTIVE":
                         output.update(fetch_external_messages(ticker, output.get("Close")))

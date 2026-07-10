@@ -89,24 +89,23 @@ V8 deliberately changes the default final-summary threshold from the V7 diagnost
 
 ## V8 File Boundary
 
-Current V8 baseline file:
+Current V8 engine file:
 
 ```text
 Momentum_Detector_V8.py
 ```
 
-Planned V8 feature implementation files:
+Current Beta Release-1 implementation files:
 
 ```text
-Momentum_Active_PostProcessor_V8.py
 Beta_Context_V8.py
-ETF_Context_V8.py
 Backtest_Momentum_Detector_V8_Beta.py
-Replay_V8_Beta_Run.py
-Validate_V8_Beta_Random.py
-config/V8_Beta_Release1_Config.json
+Validate_V8_Beta_Backtest.py
 config/V8_Post_Processor_Message_Map.csv
+tests/test_beta_context_v8.py
 ```
+
+ETF implementation files remain deferred until the Beta release is signed off and a direct reverse-lookup provider is approved.
 
 Planned V8 documentation and artifacts use `V8` in their filenames even where the approved design originated in a V7 planning document.
 
@@ -132,6 +131,14 @@ Required stages:
 8. Prove exact Score invariance.
 9. Produce the Beta research summary and signoff package.
 10. Stop for explicit Beta signoff.
+
+Implementation status on 2026-07-10:
+
+- V8 Beta calculation and informational `Score_Message` integration are implemented in development.
+- The semantic Active trigger references `CONFIRMED_ENTRY_MIN_SCORE`; CLI summary controls are not inputs.
+- The Beta processor does not write `Score` or change a final decision.
+- The backtest stores price inputs, benchmark inputs, source snapshots, a universe snapshot, manifests, checksums, full signal/daily audits, interaction summaries, and deterministic random-validation samples.
+- A first pilot replay has been initiated. Pilot results are research evidence only and do not sign off the Beta track.
 
 ## Track 2: Direct ETF Mapping Release
 

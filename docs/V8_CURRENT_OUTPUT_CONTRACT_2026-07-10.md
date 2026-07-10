@@ -87,16 +87,41 @@ Behavior:
 
 ## Current Feature State
 
-The V8 baseline currently preserves corrected V7 scoring and output behavior.
+The V8 development engine preserves corrected V7 scoring/output behavior and now contains the first Beta post-processor implementation.
+
+Implemented in development:
+
+- Beta is calculated from up to 252 aligned completed-session daily returns against the engine-selected benchmark.
+- At least 200 aligned return observations are required.
+- A live/pre-market/post-market override is excluded from Beta by using `Regular_Session_Close` when present.
+- Beta executes only after the semantic Active trigger passes.
+- The only production-row field written by the Beta processor is `Score_Message`.
+- `Score`, `Final_Decision`, component scores, ranking, and CLI selection are unchanged by Beta.
+- Missing/insufficient Beta data fails open with explanatory text for the already-Active row.
+- Message wording is controlled by `config/V8_Post_Processor_Message_Map.csv`.
+- V8 explicitly uses `fill_method=None` for `pct_change`, eliminating deprecated implicit forward filling.
 
 Not yet implemented:
 
-- Beta post-processing.
-- `Score_Message` Beta text.
 - Direct stock-to-ETF mapping.
 - ETF text appended to `Score_Message`.
 
-These features require their planned backtesting, API validation, and signoff before V8 becomes operational.
+Beta remains under backtesting and review. ETF requires separate API validation and implementation. V8 remains non-operational until the complete signoff sequence is satisfied.
+
+## Beta Backtest Trace Contract
+
+`Backtest_Momentum_Detector_V8_Beta.py` creates a unique run folder containing:
+
+- Stored daily stock and benchmark price inputs.
+- The stock-master metadata snapshot used for sector/industry labels.
+- Exact engine, Beta, message-map, and backtest source snapshots.
+- Daily decision and Active-episode signal audits.
+- Forward return, MAE, MFE, and realized-volatility observations.
+- Beta-band interactions by market regime, sector, and industry.
+- A deterministic random validation sample and separate expected-value file.
+- A JSON manifest and SHA-256 checksum inventory.
+
+`Validate_V8_Beta_Backtest.py` is a read-only offline validator. It verifies every stored hash and recomputes sampled decisions, scores, Beta, R-squared, and Beta bands from the frozen inputs/source snapshot.
 
 ## Version Isolation
 
