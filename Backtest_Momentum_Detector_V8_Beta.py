@@ -329,6 +329,7 @@ def main():
         Path(engine.__file__),
         Path(beta_context.__file__),
         Path(__file__),
+        Path(__file__).resolve().parent / "Validate_V8_Beta_Backtest.py",
     ]
     for source_file in source_files:
         shutil.copy2(source_file, source_snapshot_dir / source_file.name)
