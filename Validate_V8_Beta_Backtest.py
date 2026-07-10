@@ -19,13 +19,22 @@ def sha256_file(path):
 def verify_checksums(run_dir):
     failures = []
     checksum_path = run_dir / "checksums.sha256"
+    listed_files = set()
     for line in checksum_path.read_text(encoding="utf-8").splitlines():
         expected, relative = line.split("  ", 1)
+        listed_files.add(Path(relative).as_posix())
         path = run_dir / Path(relative)
         if not path.is_file():
             failures.append(f"missing: {relative}")
         elif sha256_file(path) != expected:
             failures.append(f"hash mismatch: {relative}")
+    actual_files = {
+        path.relative_to(run_dir).as_posix()
+        for path in run_dir.rglob("*")
+        if path.is_file() and path != checksum_path
+    }
+    for relative in sorted(actual_files - listed_files):
+        failures.append(f"unexpected file not in checksum inventory: {relative}")
     return failures
 
 
@@ -95,6 +104,7 @@ def main():
         return 1
 
     source_dir = run_dir / "inputs" / "source_snapshot"
+    sys.dont_write_bytecode = True
     sys.path.insert(0, str(source_dir))
     engine = importlib.import_module("Momentum_Detector_V8")
     beta_context = importlib.import_module("Beta_Context_V8")
