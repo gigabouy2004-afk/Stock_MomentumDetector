@@ -1,0 +1,2 @@
+# Frozen backtest evidence is checksum-addressed and must retain exact bytes.
+backtests/V8_Beta_Release1/runs/** -text
