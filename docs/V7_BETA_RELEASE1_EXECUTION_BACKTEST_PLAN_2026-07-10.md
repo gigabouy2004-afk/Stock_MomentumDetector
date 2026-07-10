@@ -4,6 +4,8 @@ Date: 2026-07-10
 
 Status: Execution plan for review. This document does not authorize Beta production deployment.
 
+Versioning note: V7 is now closed. Release 1 implementation, backtesting code, artifacts, and signoff will be versioned as V8 work. References to historical V7 replay mean regression against the frozen V7 baseline, not modification of V7.
+
 Parent plan:
 
 - `docs/V7_BETA_ETF_ACTIVE_POSTPROCESSOR_PLAN_2026-07-10.md`

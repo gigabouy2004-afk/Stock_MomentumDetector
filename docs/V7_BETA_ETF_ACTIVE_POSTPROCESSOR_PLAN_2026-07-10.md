@@ -4,6 +4,8 @@ Date: 2026-07-10
 
 Status: Revised plan for review. User decisions captured. No engine implementation is authorized yet.
 
+Versioning note: V7 is now closed. This document preserves the approved feature design, but all implementation described here targets V8. References to V7 calculations mean the frozen baseline behavior that V8 must inherit and regression-test.
+
 ## Final User-Facing Contract
 
 The user should need only two columns:
@@ -562,4 +564,3 @@ Only this revised plan document is part of the current task.
 - Residual momentum separates stock-specific momentum from common factor exposures: https://repub.eur.nl/pub/22252
 - High beta is not automatically higher risk-adjusted confidence: https://www.nber.org/papers/w16601
 - Momentum risk is regime-dependent and can reverse sharply in stressed/rebound states: https://www.kentdaniel.net/papers/published/jfe_16.pdf
-
