@@ -241,13 +241,19 @@ def filter_verified_top10_mappings(
         accepted.append(record)
 
     accepted.sort(key=lambda item: (-item["Holding_Weight_Pct"], item["ETF_Ticker"]))
+    selected = accepted[: int(max_mappings)]
+    for record in accepted[int(max_mappings) :]:
+        overflow = dict(record)
+        overflow["Eligibility_Status"] = "EXCLUDED"
+        overflow["Eligibility_Reason"] = "OMITTED_BY_TOP3_LIMIT"
+        rejected.append(overflow)
     rejected.sort(
         key=lambda item: (
             -(item["Holding_Weight_Pct"] if item["Holding_Weight_Pct"] is not None else -1),
             item["ETF_Ticker"],
         )
     )
-    return accepted[: int(max_mappings)], rejected
+    return selected, rejected
 
 
 def empty_context(stock_code, status, detail=""):
@@ -267,6 +273,7 @@ def empty_context(stock_code, status, detail=""):
         "Latency_Ms": "",
         "Source_HTML_SHA256": "",
         "Raw_Candidate_Count": 0,
+        "Eligible_Top10_Before_Limit_Count": 0,
         "Verified_Top10_Count": 0,
         "Rejected_Candidate_Count": 0,
         "Mappings": [],
@@ -353,6 +360,8 @@ def get_etf_mapping_context(
             "Latency_Ms": response.get("Latency_Ms", ""),
             "Source_HTML_SHA256": response.get("Body_SHA256", ""),
             "Raw_Candidate_Count": len(exposure_rows),
+            "Eligible_Top10_Before_Limit_Count": len(accepted)
+            + sum(item.get("Eligibility_Reason") == "OMITTED_BY_TOP3_LIMIT" for item in rejected),
             "Verified_Top10_Count": len(accepted),
             "Rejected_Candidate_Count": len(rejected),
             "Mappings": accepted,

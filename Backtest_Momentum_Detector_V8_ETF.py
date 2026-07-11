@@ -14,6 +14,7 @@ import ETF_Context_V8 as etf_context
 
 DEFAULT_SAMPLE_STOCKS = ["NVDA", "AAPL", "MSFT", "TSLA", "AMZN"]
 DEFAULT_OUTPUT_ROOT = Path("backtests") / "V8_ETF_Phase2" / "runs"
+MAX_VALIDATION_STALENESS_DAYS = 60
 
 
 def sha256_file(path):
@@ -97,16 +98,25 @@ def validate_mapping_against_holdings(stock_code, mapping, timeout_seconds):
     response = etf_context.fetch_source_page(url, timeout_seconds)
     top_holdings, as_of_date = parse_holdings_validation_page(response["Body"])
     match = next((holding for holding in top_holdings if holding["Holding_Ticker"] == stock_code), None)
+    try:
+        freshness_age_days = (datetime.now(timezone.utc).date() - datetime.fromisoformat(as_of_date).date()).days
+    except (TypeError, ValueError):
+        freshness_age_days = None
+    freshness_pass = freshness_age_days is not None and freshness_age_days <= MAX_VALIDATION_STALENESS_DAYS
+    validation_pass = bool(match) and freshness_pass
     return {
         "Validation_URL": url,
         "Validation_HTTP_Status": response["HTTP_Status"],
         "Validation_Latency_Ms": response["Latency_Ms"],
         "Validation_HTML_SHA256": response["Body_SHA256"],
         "Validation_As_Of_Date": as_of_date,
+        "Validation_Freshness_Age_Days": freshness_age_days if freshness_age_days is not None else "",
+        "Validation_Freshness_Max_Days": MAX_VALIDATION_STALENESS_DAYS,
+        "Validation_Freshness_Pass": freshness_pass,
         "Validation_Top10_Match": bool(match),
         "Validation_Rank": match["Rank"] if match else "",
         "Validation_Weight_Pct": match["Holding_Weight_Pct_Validation"] if match else "",
-        "Validation_Status": "PASS" if match else "FAIL",
+        "Validation_Status": "PASS" if validation_pass else "FAIL",
     }
 
 
@@ -188,6 +198,9 @@ def main():
                     "Validation_Latency_Ms": "",
                     "Validation_HTML_SHA256": "",
                     "Validation_As_Of_Date": "",
+                    "Validation_Freshness_Age_Days": "",
+                    "Validation_Freshness_Max_Days": MAX_VALIDATION_STALENESS_DAYS,
+                    "Validation_Freshness_Pass": False,
                     "Validation_Top10_Match": False,
                     "Validation_Rank": "",
                     "Validation_Weight_Pct": "",
@@ -221,6 +234,7 @@ def main():
                 "Production_Latency_Ms": context["Latency_Ms"],
                 "Source_HTML_SHA256": context["Source_HTML_SHA256"],
                 "Raw_Candidate_Count": context["Raw_Candidate_Count"],
+                "Eligible_Top10_Before_Limit_Count": context["Eligible_Top10_Before_Limit_Count"],
                 "Verified_Top10_Count": context["Verified_Top10_Count"],
                 "Rejected_Candidate_Count": context["Rejected_Candidate_Count"],
                 "Mapped_ETFs": etf_context.format_mapped_etf_codes(context),
@@ -250,6 +264,7 @@ def main():
             "Threshold_Pct": etf_context.TOP10_GUARANTEE_MIN_WEIGHT_PCT,
             "Conservative": True,
         },
+        "Validation_Max_Staleness_Days": MAX_VALIDATION_STALENESS_DAYS,
         "Production_Request_Count": production_request_count,
         "Production_Per_Stock": production_request_count / len(stocks) if stocks else 0,
         "Validation_Request_Count": validation_request_count,

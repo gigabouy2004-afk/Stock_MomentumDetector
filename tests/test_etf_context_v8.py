@@ -157,8 +157,10 @@ class ETFContextV8Tests(unittest.TestCase):
                 {"ETF_Ticker": "DDD", "ETF_Name": "D", "ETF_Exchange_Provider": "AMEX", "Holding_Weight_Pct": 13.0},
             ]
         )
-        accepted, _ = etf_context.filter_verified_top10_mappings(rows, self.etf_master, max_mappings=3)
+        accepted, rejected = etf_context.filter_verified_top10_mappings(rows, self.etf_master, max_mappings=3)
         self.assertEqual([row["ETF_Ticker"] for row in accepted], ["CCC", "DDD", "BBB"])
+        self.assertEqual(rejected[0]["ETF_Ticker"], "AAA")
+        self.assertEqual(rejected[0]["Eligibility_Reason"], "OMITTED_BY_TOP3_LIMIT")
 
 
 if __name__ == "__main__":
