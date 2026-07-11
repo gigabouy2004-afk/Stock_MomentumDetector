@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-11
 
-Status: Beta track closed and dropped; ETF information extraction is the only active V8 post-processing track. V8 remains non-operational until Phase 2 validation and explicit signoff are complete.
+Status: Beta track closed and dropped; ETF Phases 2A-2C and the five-stock validation are complete. V8 remains non-operational pending explicit user signoff.
 
 ## Version Boundary
 
@@ -136,17 +136,33 @@ docs/V8_BETA_RELEASE1_PILOT_2026-07-10.md
 
 It is not imported or executed by the active V8 engine.
 
+## Phase 2 Validation Result
+
+Canonical run:
+
+```text
+V8ETF_20260711T135316Z_6fa10c6
+```
+
+Five stock-specific production requests returned 13 mappings. All 13 mappings passed separate top-ten rank validation and the 60-day freshness rule. Median production-style latency was `155.67 ms`, p95 was `212.51 ms`, and maximum was `226.16 ms`.
+
+Full conclusion:
+
+```text
+docs/V8_ETF_PHASE2_CONCLUSION_2026-07-11.md
+```
+
 ## Operational Signoff Gates
 
 V8 may replace V7 only after:
 
-- Five-stock and representative live ETF validations pass.
+- Five-stock ETF validation passes. Completed 2026-07-11.
 - Every returned mapping is independently confirmed within the ETF's top ten during validation.
 - Exactly one reverse-source request per production stock is proven.
 - No production path can call per-ETF holdings pages or a yfinance ETF-universe loop.
 - US whitelist, leverage exclusions, ordering, caching, timeout, and failure tests pass.
 - `Score` invariance passes.
-- ETF message wording is approved.
+- ETF message wording is reviewed and approved by the user.
 - Explicit user operational signoff is recorded.
 
 Until then:

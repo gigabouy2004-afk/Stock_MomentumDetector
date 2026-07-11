@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-11
 
-Status: ETF Phase 2 development implementation; V8 is not yet operational.
+Status: ETF Phase 2 implementation and five-stock validation complete; V8 awaits explicit operational signoff.
 
 ## Baseline
 
@@ -74,10 +74,16 @@ The separate backtest may call returned ETFs' holdings pages solely to validate 
 
 Before V8 becomes operational:
 
-1. Complete the canonical five-stock Phase 2 validation.
-2. Review latency, rank accuracy, freshness limitations, and sample messages.
-3. Confirm no prohibited production network path exists.
-4. Record explicit Phase 2 and V8 operational signoff.
+1. Review the completed Phase 2 conclusion and sample messages.
+2. Accept the documented public-page schema/freshness/completeness limitations.
+3. Record explicit V8 operational signoff.
+
+Canonical evidence:
+
+```text
+backtests/V8_ETF_Phase2/runs/V8ETF_20260711T135316Z_6fa10c6
+docs/V8_ETF_PHASE2_CONCLUSION_2026-07-11.md
+```
 
 Until signoff:
 

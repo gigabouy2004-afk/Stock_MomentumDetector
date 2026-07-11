@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-11
 
-Status: ETF-only V8 development contract. Beta has been dropped and is not part of production output.
+Status: ETF-only V8 development contract. Phase 2 implementation and five-stock validation are complete; Beta has been dropped.
 
 ## Defaults and Active Trigger
 
@@ -127,3 +127,10 @@ Dropped:
 - Any Beta influence on Score or action context.
 
 V8 remains non-operational pending Phase 2 conclusion review and explicit user signoff.
+
+Canonical validation evidence:
+
+```text
+backtests/V8_ETF_Phase2/runs/V8ETF_20260711T135316Z_6fa10c6
+docs/V8_ETF_PHASE2_CONCLUSION_2026-07-11.md
+```
