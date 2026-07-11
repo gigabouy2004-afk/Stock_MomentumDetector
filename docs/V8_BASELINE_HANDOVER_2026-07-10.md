@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: ETF Phase 2 implementation and five-stock validation complete. Comprehensive momentum-and-ETF backtesting is planned but not executed; V8 remains development-only.
+Status: ETF Phase 2 and the requested 10-stock Q2 same-quarter technical backtest are complete. Technical validation passed, but the Active-signal evidence was insufficient and unfavorable; V8 remains development-only.
 
 ## Baseline
 
@@ -72,14 +72,19 @@ The separate backtest may call returned ETFs' holdings pages solely to validate 
 
 ## Remaining Transition Gate
 
-Before V8 becomes operational:
+Completed in the 10-stock technical run:
 
-1. Review and approve the comprehensive backtest design.
-2. Implement the deterministic replay runner, independent validator, and required tests.
-3. Execute development, validation, final-test, ticker-holdout, matched WAIT, V7 comparison, and robustness stages.
-4. Expand ETF functional validation and use point-in-time historical mappings or a prospective shadow cohort for combined outcomes.
-5. Review the completed backtest conclusion, sample ETF messages, and all documented data limitations.
-6. Record explicit V8 operational signoff.
+1. Comprehensive design and same-quarter execution rule recorded.
+2. Deterministic daily replay runner, independent validator, configuration, and tests implemented.
+3. Ten-stock Q2 technical sample, random-date outcomes, ETF rank validation, Score invariance, frozen inputs, and checksums completed.
+4. Technical conclusion prepared.
+
+Still required before V8 becomes operational:
+
+1. Execute the broader chronological development, validation, final-test, ticker-holdout, matched WAIT, V7 comparison, and robustness stages.
+2. Obtain strict point-in-time ETF evidence or complete the prospective shadow cohort; alternatively record explicit acceptance of the assumption-limited scope.
+3. Review the unfavorable sample result, completed conclusion, ETF message wording, and all data limitations.
+4. Record explicit V8 operational signoff only if the expanded evidence supports it.
 
 Canonical evidence:
 
@@ -94,16 +99,33 @@ Comprehensive execution specification:
 docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md
 ```
 
+Executed technical sample and conclusion:
+
+```text
+backtests/V8_Comprehensive/runs/V8FULL_20260711T192053Z_ffe1567_20260712
+docs/V8_COMPREHENSIVE_BACKTEST_CONCLUSION_2026-07-12.md
+```
+
+Execution summary:
+
+- 10 stocks and 620 Q2 daily EOD replays.
+- 10 deterministic random test dates with 5/10/21-session exits inside Q2.
+- 11 same-quarter ETF mappings; 11/11 independently validated in the top ten.
+- 620/620 Score-invariance checks passed.
+- Independent validator recomputed 30 forward returns and reported zero failures.
+- Four independent Active episodes: mean 21D return `-0.49%`, mean SPY-adjusted return `-5.13%`, positive rate `25%`.
+- Evidence classification: `TECHNICAL_SAMPLE_COMPLETE_INSUFFICIENT_FOR_BROAD_OPERATIONAL_SIGNOFF`.
+
 Important boundary:
 
 - The existing five-stock ETF run is a production-path and mapping-quality validation, not a comprehensive V8 momentum backtest.
 - The retired Beta pilot is historical audit evidence and is not part of the active V8 test scope.
 - Current ETF mappings cannot be assigned to historical signals without dated point-in-time holdings evidence.
-- No comprehensive V8 run ID exists yet.
+- The completed 10-stock technical run does not meet the broad sample targets in the comprehensive plan.
 
 Until signoff:
 
 ```text
 V7 = operational baseline
-V8 = development only; comprehensive backtest pending
+V8 = development only; broader backtest and operational signoff not passed
 ```

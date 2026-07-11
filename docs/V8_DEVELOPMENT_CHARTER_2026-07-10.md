@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: Beta track closed and dropped; ETF Phases 2A-2C and the five-stock validation are complete. A comprehensive V8 momentum-and-ETF backtest plan is prepared; execution and operational signoff remain pending.
+Status: Beta track closed and dropped; ETF Phases 2A-2C are complete. A 10-stock Q2 same-quarter technical backtest passed integrity checks but returned insufficient and unfavorable Active-signal evidence. V8 remains non-operational.
 
 ## Version Boundary
 
@@ -165,6 +165,26 @@ docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md
 The plan requires deterministic point-in-time replay, independent Active episodes, chronological validation and final-test partitions, matched WAIT controls, frozen V7 comparison, forward return and drawdown analysis, offline reproducibility, and expanded ETF validation.
 
 Historical ETF results are permitted only when the mapping and holdings evidence existed at the signal date. The current reverse page cannot be applied retrospectively to old signals. If a suitable historical source is unavailable, combined V8-plus-ETF outcome validation must use a prospective shadow cohort.
+
+## 10-Stock Same-Quarter Execution Result
+
+Canonical run:
+
+```text
+backtests/V8_Comprehensive/runs/V8FULL_20260711T192053Z_ffe1567_20260712
+```
+
+Conclusion:
+
+```text
+docs/V8_COMPREHENSIVE_BACKTEST_CONCLUSION_2026-07-12.md
+```
+
+The run replayed 620 Q2 daily rows across 10 stocks, checked one deterministic random date per stock, verified 11 same-quarter ETF mappings, preserved Score on all 620 rows, and passed independent validation with zero failures.
+
+The four independent Active episodes returned a mean `-0.49%` over 21 sessions and a mean `-5.13%` versus SPY; only one of four was positive. This is insufficient for broad inference and unfavorable within the tested sample.
+
+ETF mappings used a same-calendar-quarter stability assumption. All accepted holdings evidence was dated 2026-05-29 and passed top-ten validation, but the result is not strict signal-date point-in-time historical evidence.
 
 ## Operational Signoff Gates
 

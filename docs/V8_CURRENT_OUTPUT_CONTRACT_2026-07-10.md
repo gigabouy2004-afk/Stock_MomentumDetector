@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: ETF-only V8 development contract. Phase 2 implementation and five-stock validation are complete; Beta has been dropped. Comprehensive V8 momentum-and-ETF backtesting remains pending.
+Status: ETF-only V8 development contract. Phase 2 and a 10-stock same-quarter technical backtest are complete; Beta has been dropped. Technical validation passed, but V8 operational evidence remains insufficient.
 
 ## Defaults and Active Trigger
 
@@ -126,7 +126,7 @@ Dropped:
 - Beta messaging.
 - Any Beta influence on Score or action context.
 
-V8 remains non-operational pending comprehensive backtest execution, conclusion review, and explicit user signoff.
+V8 remains non-operational pending broader backtest execution, review of the unfavorable 10-stock sample, and explicit user signoff supported by expanded evidence.
 
 Canonical validation evidence:
 
@@ -142,3 +142,12 @@ docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md
 ```
 
 The existing ETF validation proves sample mapping quality and production-path behavior. It does not establish broad historical momentum performance. Historical ETF outcome claims require point-in-time mapping and holdings evidence; otherwise the combined stock-and-ETF outcome study is prospective.
+
+Completed 10-stock technical evidence:
+
+```text
+backtests/V8_Comprehensive/runs/V8FULL_20260711T192053Z_ffe1567_20260712
+docs/V8_COMPREHENSIVE_BACKTEST_CONCLUSION_2026-07-12.md
+```
+
+The execution did not change this output contract. Score invariance passed on all 620 replayed rows. The same-quarter ETF analysis is assumption-limited and the momentum results do not support V8 operational activation.

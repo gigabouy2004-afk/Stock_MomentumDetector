@@ -2,7 +2,16 @@
 
 Date: 2026-07-12
 
-Status: Plan prepared for implementation and review. No comprehensive V8 run has started, and this document does not authorize V8 operational activation.
+Status: The requested 10-stock Q2 same-quarter technical run completed on 2026-07-12. It passed integrity validation but produced insufficient and unfavorable Active-signal evidence; broader execution and operational signoff remain pending.
+
+Executed technical sample:
+
+```text
+backtests/V8_Comprehensive/runs/V8FULL_20260711T192053Z_ffe1567_20260712
+docs/V8_COMPREHENSIVE_BACKTEST_CONCLUSION_2026-07-12.md
+```
+
+The executed sample does not satisfy this plan's broad evidence targets and does not authorize V8 operational activation.
 
 ## Objective
 
@@ -622,7 +631,7 @@ V8 = DEVELOPMENT / COMPREHENSIVE BACKTEST PENDING
 
 ## Handover Checklist
 
-The next implementation session should begin by reading:
+The next expansion session should begin by reading:
 
 ```text
 docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md
