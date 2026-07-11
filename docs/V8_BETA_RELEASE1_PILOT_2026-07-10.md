@@ -2,7 +2,9 @@
 
 Date: 2026-07-10
 
-Status: Canonical pilot completed; Beta track remains in development and is not signed off.
+Status: Canonical historical pilot completed; Beta track closed and dropped on 2026-07-11 without production signoff.
+
+> **Final user decision:** Results were not sufficiently conclusive to correlate Beta confidently with forward price movement. No further Beta work will be performed. Beta has been removed from the active V8 production path and from `Score_Message`. This report and its frozen run remain audit evidence only.
 
 ## Reproducible Run
 
@@ -72,7 +74,7 @@ The replay independently recomputed the sampled final decision, Score, Beta, R-s
 
 Observed Beta-to-forward-return Spearman correlations were small: `0.043` at 1D, `0.049` at 5D, `0.083` at 10D, `0.134` at 21D, `0.118` at 63D, and `-0.121` at 126D.
 
-This pilot does not support a simple rule that higher Beta should always increase Momentum Score confidence. The middle high-sensitivity band performed better descriptively at 21D and 63D, while the very-high-sensitivity band had worse median 63D/126D outcomes and materially larger adverse paths. The evidence supports keeping Beta informational and using it to explain market sensitivity/risk context after the core score is finalized.
+This pilot does not support a simple rule that higher Beta should increase Momentum Score confidence. The middle high-sensitivity band performed better descriptively at 21D and 63D, while the very-high-sensitivity band had worse median 63D/126D outcomes and materially larger adverse paths. The small, ticker-clustered sample was not sufficiently conclusive for a production relationship, including informational Beta messaging.
 
 ## Market-Regime Linkage
 
@@ -105,13 +107,10 @@ Industry/sector conclusions therefore remain open. The broader study must increa
 - V8 `pct_change` calls now specify `fill_method=None`; deprecated implicit NA padding is not used.
 - V7 remains unchanged and operational. V8 remains a development engine.
 
-## Next Beta Validation Actions
+## Terminal Decision
 
-1. Expand to a substantially broader ticker universe with adequate representation per sector and industry.
-2. Freeze chronological development, validation, and final holdout periods before comparing message rules.
-3. Control repeated observations by reporting ticker-level results and cluster-aware confidence intervals.
-4. Add sector-benchmark comparisons alongside the broad-market Beta without feeding either value into Score.
-5. Complete random-validation rounds two and three on the broader frozen run.
-6. Review message wording and research results for explicit Beta Release-1 signoff.
-
-No ETF work or V8 operational transition is authorized by this pilot.
+- No broader Beta universe expansion.
+- No additional Beta holdout or random-validation rounds.
+- No Beta production message or Score relationship.
+- No active Beta module in the V8 engine.
+- Proceed directly to V8 ETF information-extraction Phases 2A-2C under the 2026-07-11 user authorization.

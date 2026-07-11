@@ -1,10 +1,12 @@
 # V8 Current Output Contract
 
-Date: 2026-07-10
+Original date: 2026-07-10
 
-Status: Development baseline. V8 is not yet operational.
+Updated: 2026-07-11
 
-## Baseline Defaults
+Status: ETF-only V8 development contract. Beta has been dropped and is not part of production output.
+
+## Defaults and Active Trigger
 
 ```text
 DEFAULT_COUNT_X = 5
@@ -12,11 +14,7 @@ DEFAULT_SCORE_Y = 75.0
 CONFIRMED_ENTRY_MIN_SCORE = 85
 ```
 
-`DEFAULT_SCORE_Y` controls only the final summary inclusion threshold. It does not define or modify any final-decision score cap.
-
-## Post-Processor Trigger Contract
-
-Beta and future ETF post-processing are triggered by the core engine's programmed Active Momentum decision:
+ETF post-processing is eligible only when:
 
 ```text
 Final_Decision == MOMENTUM_ACTIVE
@@ -24,24 +22,11 @@ AND
 Score >= CONFIRMED_ENTRY_MIN_SCORE
 ```
 
-The current programmed Active threshold is `85`.
-
-The post-processors must reference `CONFIRMED_ENTRY_MIN_SCORE`, so a future reviewed change to the core Active threshold automatically carries into post-processing eligibility.
-
-The following CLI values do not participate in the trigger:
-
-```text
---score-y
---count-x
-```
-
-They control only final-summary presentation. An Active row remains eligible for Beta even if a tactical `--score-y` value hides it from the final summary; a rejected/waiting row never becomes Beta-eligible merely because `--score-y` is lowered.
+`--score-y` and `--count-x` control only final-summary presentation. They do not participate in the ETF trigger.
 
 ## Score Contract
 
-Published `Score` is always constrained to the inclusive range `0..100`.
-
-Fixed maximum scores by final decision:
+Published `Score` remains constrained to `0..100`.
 
 | Final decision | Maximum published Score |
 |---|---:|
@@ -49,9 +34,59 @@ Fixed maximum scores by final decision:
 | `MOMENTUM_PRESENT_WAIT_CONFIRMATION` | 84 |
 | `REJECT` | 49 |
 
-The default V8 final summary therefore shows the top five rows selected from published scores of `75` or higher. Rows below 75 remain available in the full execution log.
+The ETF post-processor cannot modify `Score`, component scores, decisions, or ranks. Beta is not calculated and cannot modify any output.
 
-## Append-only Execution Log
+## Score_Message Contract
+
+For an eligible Active row, `Score_Message` contains ETF context only.
+
+Mapped example:
+
+```text
+Active momentum confirmed. Verified top-10 ETF mappings: SMH 19.20%; VGT 16.77%; FTEC 16.60%.
+```
+
+No verified mapping:
+
+```text
+Active momentum confirmed. No USA-listed ETF mapping could be conservatively verified as a top-ten holding.
+```
+
+Failure example:
+
+```text
+Active momentum confirmed. ETF mapping is unavailable (<reason>); Score is unchanged.
+```
+
+WAIT and REJECT rows do not call the ETF source and retain a blank `Score_Message`.
+
+## ETF Eligibility and Ordering
+
+A mapping is displayed only when all conditions pass:
+
+- ETF ticker exists in the local US ETF master.
+- ETF is not identified as leveraged or inverse.
+- Stock holding weight is strictly greater than `100/11` percent, conservatively proving top-ten membership.
+
+At most three mappings are displayed, sorted by:
+
+```text
+Holding_Weight_Pct DESC
+ETF_Ticker ASC
+```
+
+Lower-weight exposures are omitted because the reverse source does not publish holding rank. No percentage is fabricated.
+
+## Network, Cache, and Failure Contract
+
+- One stock-specific TradingView funds-page request is permitted per uncached Active stock.
+- Successful results are cached by stock code for 24 hours by default.
+- No per-ETF holdings request exists in `Momentum_Detector_V8.py` or `ETF_Context_V8.py` production lookup.
+- No ETF-universe Yahoo/yfinance scan is allowed.
+- Timeout, HTTP error, empty response, or schema change fails open into `Score_Message`.
+- Provider response hash, retrieval time, latency, URL, and filter counts are available in the mapping context/audit result.
+
+## Append-Only Execution Log
 
 Default path:
 
@@ -59,77 +94,36 @@ Default path:
 D:/Tools/Stock_MomentumDetector/Processed_Data/V8_Momentum_Execution_Log.csv
 ```
 
-Behavior:
+Every processed ticker is appended before final-summary filtering. A reader may inspect completed rows while the scan continues when it uses non-exclusive file access.
 
-- One complete row is appended for every processed ticker.
-- Rows are logged before the final-summary score filter is applied.
-- No-data and error rows are included with Score `0`.
-- Every row is flushed, synchronized, and the file handle is closed immediately.
-- A read-only application can inspect completed rows while the scan continues, subject to the reader not requesting an exclusive file lock.
-- The file persists across runs.
-- `Run_ID` and `Processed_At` identify each execution and row time.
-- `--log-output` selects an alternative log path.
+## Final Summary
 
-## Final Summary Output
-
-Default base path:
+Default path:
 
 ```text
 D:/Tools/Stock_MomentumDetector/Processed_Data/V8_Momentum_Execution_Dump.csv
 ```
 
-Behavior:
+It is written after the scan and contains the sorted top `--count-x` rows satisfying `Score >= --score-y`.
 
-- Written after the complete scan finishes.
-- Contains the sorted top `--count-x` rows satisfying `Score >= --score-y`.
-- Remains separate from the full append-only execution log.
-- `--output` selects an alternative final-summary path.
-
-## Current Feature State
-
-The V8 development engine preserves corrected V7 scoring/output behavior and now contains the first Beta post-processor implementation.
+## Feature State
 
 Implemented in development:
 
-- Beta is calculated from up to 252 aligned completed-session daily returns against the engine-selected benchmark.
-- At least 200 aligned return observations are required.
-- A live/pre-market/post-market override is excluded from Beta by using `Regular_Session_Close` when present.
-- Beta executes only after the semantic Active trigger passes.
-- The only production-row field written by the Beta processor is `Score_Message`.
-- `Score`, `Final_Decision`, component scores, ranking, and CLI selection are unchanged by Beta.
-- Missing/insufficient Beta data fails open with explanatory text for the already-Active row.
-- Message wording is controlled by `config/V8_Post_Processor_Message_Map.csv`.
-- V8 explicitly uses `fill_method=None` for `pct_change`, eliminating deprecated implicit forward filling.
+- Semantic Active-only ETF trigger.
+- Direct stock-specific ETF exposure lookup.
+- Local US ETF whitelist.
+- Conservative top-ten proof and leverage exclusion.
+- Top-three sorting.
+- Persistent TTL cache and bounded timeout.
+- ETF-only `Score_Message` rules.
+- Fail-open Score invariance.
+- Five-stock API/data-quality validation runner.
 
-Not yet implemented:
+Dropped:
 
-- Direct stock-to-ETF mapping.
-- ETF text appended to `Score_Message`.
+- Beta calculation.
+- Beta messaging.
+- Any Beta influence on Score or action context.
 
-Beta remains under backtesting and review. ETF requires separate API validation and implementation. V8 remains non-operational until the complete signoff sequence is satisfied.
-
-## Beta Backtest Trace Contract
-
-`Backtest_Momentum_Detector_V8_Beta.py` creates a unique run folder containing:
-
-- Stored daily stock and benchmark price inputs.
-- The stock-master metadata snapshot used for sector/industry labels.
-- Exact engine, Beta, message-map, and backtest source snapshots.
-- Daily decision and Active-episode signal audits.
-- Forward return, MAE, MFE, and realized-volatility observations.
-- Beta-band interactions by market regime, sector, and industry.
-- A deterministic random validation sample and separate expected-value file.
-- A JSON manifest and SHA-256 checksum inventory.
-
-`Validate_V8_Beta_Backtest.py` is a read-only offline validator. It verifies every stored hash and recomputes sampled decisions, scores, Beta, R-squared, and Beta bands from the frozen inputs/source snapshot.
-
-## Version Isolation
-
-V8 writes only V8-named default output files and creates V8-prefixed run IDs.
-
-It does not write to:
-
-```text
-V7_Momentum_Execution_Log.csv
-V7_Momentum_Execution_Dump.csv
-```
+V8 remains non-operational pending Phase 2 conclusion review and explicit user signoff.

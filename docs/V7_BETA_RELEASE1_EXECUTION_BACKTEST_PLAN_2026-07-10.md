@@ -1,5 +1,7 @@
 # V7 Beta Release 1 Execution and Backtesting Plan
 
+> **Retired on 2026-07-11.** The canonical V8 pilot did not provide sufficiently conclusive evidence that Beta reliably correlates with forward price performance after Active Momentum. The user closed and dropped this track. Do not execute the remaining stages, do not integrate Beta into production, and retain this document only as historical research design.
+
 Date: 2026-07-10
 
 Status: Execution plan for review. This document does not authorize Beta production deployment.

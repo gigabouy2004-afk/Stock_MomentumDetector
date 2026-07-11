@@ -1,8 +1,10 @@
 # V7 Post-Processor Implementation Track: Beta First, ETF Mapping Second
 
+> **Updated decision — 2026-07-11:** Beta is closed and dropped without production signoff because the pilot evidence was not conclusive. All Beta sections below are historical only. The direct ETF mapping requirements remain active for V8 and proceed independently as Phases 2A, 2B, and 2C.
+
 Date: 2026-07-10
 
-Status: Revised plan for review. User decisions captured. No engine implementation is authorized yet.
+Status: Beta portion retired; ETF Phases 2A-2C authorized for V8 implementation and five-stock validation.
 
 Versioning note: V7 is now closed. This document preserves the approved feature design, but all implementation described here targets V8. References to V7 calculations mean the frozen baseline behavior that V8 must inherit and regression-test.
 
@@ -58,13 +60,13 @@ The CLI display controls `--score-y` and `--count-x` do not control post-process
 
 ## Approved Release Order
 
-### Release 1: Beta post-processor
+### Release 1: Beta post-processor — retired
 
-Beta calculation, residual-momentum validation, full historical backtesting, review, and signoff must be completed first.
+The Beta pilot is preserved for audit, but no further Beta calculation, validation, messaging, or production work is permitted.
 
 ### Release 2: Mapped ETF extraction
 
-ETF mapping begins only after the Beta release is signed off and after a suitable direct stock-to-ETF API is identified and validated.
+ETF mapping proceeds by explicit user authorization dated 2026-07-11. Beta signoff is no longer a prerequisite.
 
 There will be no pan-ETF holdings scan in the live momentum workflow.
 
@@ -92,11 +94,10 @@ post_process_score_context(
 
 The returned string becomes `Score_Message`.
 
-Initial enabled processor sequence:
+Current enabled processor sequence:
 
 ```text
-1. BetaContextProcessor
-2. ETFMappingProcessor    # disabled until Release 2 approval
+1. ETFMappingProcessor
 ```
 
 Each processor returns structured rule codes and template parameters internally. The message builder converts those codes into one user-facing string.

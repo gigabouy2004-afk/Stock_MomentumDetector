@@ -1,25 +1,54 @@
 # V8 Development Charter
 
-Date: 2026-07-10
+Original date: 2026-07-10
 
-Status: V8 development boundary approved; V8 is not yet operational.
+Updated: 2026-07-11
 
-## Version Decision
+Status: Beta track closed and dropped; ETF information extraction is the only active V8 post-processing track. V8 remains non-operational until Phase 2 validation and explicit signoff are complete.
 
-Version 7 is closed.
+## Version Boundary
 
-All new development occurs in Version 8 or V8-specific support files. V7 will not receive the Beta or ETF-mapping features.
+Version 7 is closed and remains the operational engine. New work occurs only in V8 or V8-specific support files. `Momentum_Detector_V7.py` must not be edited by the V8 ETF track.
 
-V7 remains the current signed-off operational engine until the complete V8 release passes validation and receives explicit user signoff.
+V8 was forked from corrected V7 commit:
 
-## V8 Feature Scope
+```text
+9a4b0ba Fix V7 score range and append-only execution log
+```
 
-V8 contains two ordered feature tracks:
+Approved V8 presentation defaults remain:
 
-1. Beta post-processing with complete backtesting and signoff.
-2. Direct stock-to-ETF top-ten mapping after a suitable reverse-lookup API is identified and validated.
+```text
+DEFAULT_COUNT_X = 5
+DEFAULT_SCORE_Y = 75.0
+```
 
-The ETF track begins after the Beta track is signed off. V8 becomes operational only after both tracks and the combined V8 regression package are signed off.
+## Beta Track Final Decision
+
+The Beta pilot produced limited descriptive differences but did not provide sufficiently conclusive, independent evidence that Beta reliably explains or predicts forward price movement after an Active Momentum signal.
+
+User decision on 2026-07-11:
+
+- Stop all further Beta research and validation.
+- Do not use Beta in `Score`, `Final_Decision`, ranking, allocation guidance, or `Score_Message`.
+- Remove the Beta processor and its active development tooling from the V8 production path.
+- Preserve the canonical Beta pilot folder and report only as historical audit evidence.
+
+The Beta track is closed without production signoff. It is not a prerequisite for the ETF track after this decision.
+
+## Active V8 Scope: ETF Information Extraction
+
+V8 Phase 2 provides direct stock-to-ETF information for confirmed Active Momentum stocks.
+
+Production trigger:
+
+```text
+Final_Decision == MOMENTUM_ACTIVE
+AND
+Score >= CONFIRMED_ENTRY_MIN_SCORE
+```
+
+`CONFIRMED_ENTRY_MIN_SCORE` is currently `85`. The post-processor references the programmed constant. CLI values such as `--score-y` and `--count-x` are presentation controls only and cannot enable or suppress ETF processing.
 
 ## User-Facing Contract
 
@@ -29,194 +58,100 @@ The user acts on one numeric field:
 Score
 ```
 
-One additional string explains the score:
+One string provides ETF context:
 
 ```text
 Score_Message
 ```
 
-Initial V8 post-processors do not create a second action score and do not modify the finalized core `Score`.
+The ETF processor must never modify `Score`, component scores, final decisions, or ranks.
 
-Post-processing begins only after the core engine has finalized Active Momentum:
-
-```text
-Final_Decision == MOMENTUM_ACTIVE
-AND
-Score >= CONFIRMED_ENTRY_MIN_SCORE
-```
-
-`CONFIRMED_ENTRY_MIN_SCORE` is currently `85`. Post-processors reference that programmed constant and the semantic Active decision; they do not hard-code a separate threshold.
-
-CLI values such as `--score-y` and `--count-x` are tactical presentation controls only. Changing either CLI value must not enable or suppress Beta or ETF post-processing.
-
-## V7 Freeze Boundary
-
-No V8 development may edit:
+Example:
 
 ```text
-Momentum_Detector_V7.py
+Score = 92
+Score_Message = Active momentum confirmed. Verified top-10 ETF mappings: SMH 19.20%; VGT 16.77%; FTEC 16.60%.
 ```
 
-V8 must start from an explicitly recorded V7 source snapshot and then diverge only in V8 files.
+## Phase 2 Requirements
 
-Any future critical V7 production issue requires a separate explicit decision. It must not be mixed into V8 feature work.
+- One stock-specific reverse lookup per eligible Active stock.
+- No pan-ETF Yahoo/yfinance holdings loop.
+- No per-ETF holdings calls in the live Momentum Detector path.
+- USA-listed ETFs only, using the local US ETF master as a whitelist.
+- Return at most three eligible ETFs.
+- Highest stock holding weight first; ETF ticker is the deterministic tie-breaker.
+- Top-ten membership must be proven, never assumed.
+- Bounded timeout, persistent TTL cache, explicit failure text, and fail-open behavior.
+- API/source failure must leave `Score` byte-for-byte unchanged.
 
-## V7 Fork-Baseline Decision Resolved
+## Phase 2A Source Decision
 
-The user approved the V8 defaults:
+The current internal implementation uses one direct TradingView stock-to-funds page:
 
 ```text
-DEFAULT_COUNT_X = 5
-DEFAULT_SCORE_Y = 75.0
+https://www.tradingview.com/symbols/<EXCHANGE>-<STOCK>/etfs/
 ```
 
-V8 was created from the corrected V7 implementation committed as:
+The page provides ETF ticker, listing venue, and stock weight for up to 100 funds holding the stock. It is a direct stock-specific source and does not scan an ETF universe.
+
+TradingView does not publish this page as a stable developer API contract. Therefore:
+
+- The parser is schema-validated and fails open if the page changes.
+- Raw response hashes, latency, and source URLs are recorded in validation artifacts.
+- The local US ETF master filters non-US funds.
+- Leveraged/inverse funds are excluded from the mathematical top-ten proof.
+- The implementation is conservative and may omit valid mappings rather than display an unproven top-ten claim.
+
+Financial Modeling Prep was reviewed as a documented direct reverse API candidate. Its published asset-exposure schema provides weights but does not document holding rank/top-ten evidence, and no entitled API key is configured locally. It was not selected for this release.
+
+## Conservative Top-Ten Proof
+
+For a non-leveraged portfolio with non-negative weights summing to 100%, a holding with weight greater than:
 
 ```text
-9a4b0ba Fix V7 score range and append-only execution log
+100 / 11 = 9.090909...%
 ```
 
-The V8 baseline inherits:
+cannot have ten larger holdings ahead of it. Such a holding is therefore mathematically guaranteed to be within the top ten.
 
-- Published Score constrained to `0..100`.
-- Fixed final-decision score caps independent of the summary filter.
-- REJECT maximum of `49`.
-- One append-only full execution-log row per processed ticker.
-- A separate final top-X summary written after the scan.
-- Run IDs and per-row processing timestamps in the execution log.
+V8 returns only locally whitelisted, non-leveraged USA ETFs passing this strict test. Valid top-ten holdings with lower weights are intentionally omitted because the direct reverse page does not provide rank.
 
-V8 deliberately changes the default final-summary threshold from the V7 diagnostic value of `0` to the approved V8 operational-development value of `75`.
-
-## V8 File Boundary
-
-Current V8 engine file:
+## V8 ETF Files
 
 ```text
 Momentum_Detector_V8.py
-```
-
-Current Beta Release-1 implementation files:
-
-```text
-Beta_Context_V8.py
-Backtest_Momentum_Detector_V8_Beta.py
-Validate_V8_Beta_Backtest.py
+ETF_Context_V8.py
+Backtest_Momentum_Detector_V8_ETF.py
 config/V8_Post_Processor_Message_Map.csv
-tests/test_beta_context_v8.py
+tests/test_etf_context_v8.py
 ```
 
-ETF implementation files remain deferred until the Beta release is signed off and a direct reverse-lookup provider is approved.
-
-Planned V8 documentation and artifacts use `V8` in their filenames even where the approved design originated in a V7 planning document.
-
-## Track 1: Beta Release
-
-Beta work follows the approved execution design in:
+Historical Beta evidence remains under:
 
 ```text
-docs/V7_BETA_RELEASE1_EXECUTION_BACKTEST_PLAN_2026-07-10.md
-```
-
-For V8 execution, artifact names and engine references are translated from V7 to V8.
-
-Required stages:
-
-1. Freeze the selected V7 source snapshot as the V8 starting point.
-2. Prove V8 baseline outputs match the selected V7 baseline before adding Beta.
-3. Implement Beta outside core scoring.
-4. Store immutable input data, source hashes, manifests, and random seeds.
-5. Run chronological development, validation, and final holdout tests.
-6. Run the three deterministic offline random-validation rounds.
-7. Analyze Beta linkage with industry, sector, market regime, and actual forward price variation.
-8. Prove exact Score invariance.
-9. Produce the Beta research summary and signoff package.
-10. Stop for explicit Beta signoff.
-
-Implementation status on 2026-07-10:
-
-- V8 Beta calculation and informational `Score_Message` integration are implemented in development.
-- The semantic Active trigger references `CONFIRMED_ENTRY_MIN_SCORE`; CLI summary controls are not inputs.
-- The Beta processor does not write `Score` or change a final decision.
-- The backtest stores price inputs, benchmark inputs, source snapshots, a universe snapshot, manifests, checksums, full signal/daily audits, interaction summaries, and deterministic random-validation samples.
-- A first pilot replay and its 50-row deterministic offline validation are complete. Pilot results are research evidence only and do not sign off the Beta track.
-
-Canonical pilot report:
-
-```text
+backtests/V8_Beta_Release1/runs/V8BETA_20260710T175207Z_27cee6f_20260710
 docs/V8_BETA_RELEASE1_PILOT_2026-07-10.md
 ```
 
-## Track 2: Direct ETF Mapping Release
+It is not imported or executed by the active V8 engine.
 
-ETF work follows the approved design in:
+## Operational Signoff Gates
 
-```text
-docs/V7_BETA_ETF_ACTIVE_POSTPROCESSOR_PLAN_2026-07-10.md
-```
+V8 may replace V7 only after:
 
-Required behavior:
-
-- Called only for finalized `MOMENTUM_ACTIVE` rows that satisfy the programmed `CONFIRMED_ENTRY_MIN_SCORE`.
-- Direct stock-to-ETF reverse lookup.
-- USA-listed ETFs only.
-- Stock must be a top-ten holding in the returned ETF.
-- At most three ETFs in the message.
-- Highest available holding weight first.
-- No pan-ETF Yahoo/yfinance loop.
-- Bounded latency, caching, and fail-open message behavior.
-- No change to core `Score`.
-
-The direct API provider must pass schema, licensing, top-ten membership, US-listing, freshness, accuracy, and latency validation before integration.
-
-## V8 Operational Signoff Gates
-
-V8 cannot replace V7 until all gates pass:
-
-### Baseline gate
-
-- Selected V7 fork source recorded by commit/blob/hash.
-- V8 pre-feature regression output matches the selected V7 baseline.
-- V7 remains untouched.
-
-### Beta gate
-
-- Calculation and no-look-ahead tests pass.
-- Offline replay from frozen inputs passes.
-- Score invariance passes.
-- Beta/industry/market linkage report completed.
-- Random holdout validation completed.
-- Beta `Score_Message` rules approved.
-
-### ETF gate
-
-- Direct API selected and approved.
-- No universe scan path exists.
-- Top-ten membership and USA ETF filtering verified.
-- Runtime and failure behavior validated.
-- ETF message format approved.
-
-### Combined V8 gate
-
-- Beta and ETF processors work together only for finalized `MOMENTUM_ACTIVE` rows meeting the programmed Active threshold.
-- Score and core V7-derived decisions remain regression-safe.
-- V8 output contract and handover are complete.
-- Syntax, unit, integration, offline replay, and representative live tests pass.
+- Five-stock and representative live ETF validations pass.
+- Every returned mapping is independently confirmed within the ETF's top ten during validation.
+- Exactly one reverse-source request per production stock is proven.
+- No production path can call per-ETF holdings pages or a yfinance ETF-universe loop.
+- US whitelist, leverage exclusions, ordering, caching, timeout, and failure tests pass.
+- `Score` invariance passes.
+- ETF message wording is approved.
 - Explicit user operational signoff is recorded.
 
-## Operational Transition
-
-Before signoff:
+Until then:
 
 ```text
 V7 = OPERATIONAL
 V8 = DEVELOPMENT / NON-OPERATIONAL
 ```
-
-After signoff:
-
-```text
-V8 = OPERATIONAL
-V7 = FROZEN LEGACY BASELINE
-```
-
-The transition must be an explicit version switch. Development results alone do not make V8 operational.

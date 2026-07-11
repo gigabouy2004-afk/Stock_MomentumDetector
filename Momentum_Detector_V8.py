@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 import yfinance as yf
 
-from Beta_Context_V8 import apply_beta_postprocessor
+from ETF_Context_V8 import apply_etf_postprocessor
 
 DEFAULT_COUNT_X = 5       # Default max rows in the final summary
 DEFAULT_SCORE_Y = 75.0    # Default minimum score included in the final summary
@@ -1199,11 +1199,8 @@ def run_scan(args, tickers, force_unique_output=False):
 
                     output = build_output_row(ticker, row, scores, weekly_trend, timing, long_term_status, reason)
 
-                    apply_beta_postprocessor(
+                    apply_etf_postprocessor(
                         output,
-                        df,
-                        benchmark_df,
-                        benchmark_ticker,
                         active_threshold=CONFIRMED_ENTRY_MIN_SCORE,
                     )
 

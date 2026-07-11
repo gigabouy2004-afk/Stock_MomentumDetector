@@ -1,24 +1,20 @@
-# V8 Development Baseline Handover
+# V8 Development Handover
 
-Date: 2026-07-10
+Original date: 2026-07-10
 
-Status: Beta Release-1 development implementation created; not operational.
+Updated: 2026-07-11
 
-## Source
+Status: ETF Phase 2 development implementation; V8 is not yet operational.
 
-V8 was forked from the V7 score/logging correction committed as:
+## Baseline
+
+V8 was forked from corrected V7 commit:
 
 ```text
 9a4b0ba Fix V7 score range and append-only execution log
 ```
 
-Baseline engine:
-
-```text
-Momentum_Detector_V8.py
-```
-
-## Intentional Differences From Corrected V7
+Intentional V8 differences:
 
 ```text
 Engine identity: V8
@@ -27,52 +23,63 @@ Default final-summary threshold: 75
 Execution log: Processed_Data/V8_Momentum_Execution_Log.csv
 Final summary: Processed_Data/V8_Momentum_Execution_Dump.csv
 Run ID prefix: V8_
+Post-processing: ETF information only
 ```
-
-Core score calculation, decision rules, live-price handling, and append-log/final-summary separation otherwise match the corrected V7 baseline at fork time. Beta is isolated in a post-processing module and does not feed back into those calculations.
 
 ## Inherited Correctness Rules
 
-- Published scores remain within `0..100`.
-- REJECT is capped at `49`, independent of `--score-y`.
-- `--score-y` filters only the final summary.
-- Every processed ticker is appended to the full execution log before summary filtering.
-- The execution log is readable during a scan when the reader uses non-exclusive read access.
-- Final summary generation remains an end-of-run operation.
-- Post-processor eligibility is based on `MOMENTUM_ACTIVE` plus the programmed `CONFIRMED_ENTRY_MIN_SCORE`, never on CLI summary filters.
+- Score remains within `0..100`.
+- REJECT remains capped at `49`, independently of `--score-y`.
+- CLI filters affect only the final summary.
+- Every processed ticker reaches the append-only execution log before filtering.
+- V7 remains untouched and operational.
 
-## Development Status
+## Beta Retirement
 
-V8 now contains the development Beta post-processor, a traceable historical replay runner, a read-only offline random-sample validator, message-map configuration, and unit tests. The ETF post-processor is not implemented.
+The Beta pilot was completed and preserved for audit, but its relationship with forward price performance was not sufficiently conclusive for production use. On 2026-07-11 the user closed and dropped the Beta track.
 
-The canonical first pilot and preliminary findings are recorded in:
+Consequences:
 
-```text
-docs/V8_BETA_RELEASE1_PILOT_2026-07-10.md
-```
+- No active V8 import of `Beta_Context_V8.py`.
+- No Beta calculation or message in the production scan.
+- No further Beta backtesting or signoff work.
+- Frozen historical Beta artifacts remain immutable evidence only.
 
-Required work before operational signoff:
+## ETF Phase 2 Implementation
 
-1. Complete the broader chronological Beta development/validation/holdout study.
-2. Complete all planned offline random-validation rounds.
-3. Review Beta/industry/market linkage and approve the Beta message rules.
-4. Direct ETF reverse-lookup API selection and validation.
-5. ETF mapping implementation and latency/data-quality validation.
-6. Combined V8 regression and live checks.
-7. Explicit user operational signoff.
-
-Current Beta implementation contract:
+Active files:
 
 ```text
-Trigger = Final_Decision == MOMENTUM_ACTIVE
-          AND Score >= CONFIRMED_ENTRY_MIN_SCORE
-Current programmed threshold = 85
-CLI --score-y / --count-x participation = none
-Core Score modification = none
-Beta output = Score_Message only
+Momentum_Detector_V8.py
+ETF_Context_V8.py
+Backtest_Momentum_Detector_V8_ETF.py
+config/V8_Post_Processor_Message_Map.csv
+tests/test_etf_context_v8.py
 ```
 
-Until those gates pass:
+Trigger:
+
+```text
+Final_Decision == MOMENTUM_ACTIVE
+AND Score >= CONFIRMED_ENTRY_MIN_SCORE
+```
+
+The ETF processor writes only `Score_Message` and never changes `Score`.
+
+The live lookup makes one stock-specific request, filters against the local US ETF master, excludes leveraged/inverse funds, applies the strict `weight > 100/11` top-ten proof, returns at most three mappings, caches successes, and fails open.
+
+The separate backtest may call returned ETFs' holdings pages solely to validate rank. That validation path is not imported by the production engine.
+
+## Remaining Transition Gate
+
+Before V8 becomes operational:
+
+1. Complete the canonical five-stock Phase 2 validation.
+2. Review latency, rank accuracy, freshness limitations, and sample messages.
+3. Confirm no prohibited production network path exists.
+4. Record explicit Phase 2 and V8 operational signoff.
+
+Until signoff:
 
 ```text
 V7 = operational baseline

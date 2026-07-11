@@ -1,7 +1,6 @@
 Processor,Rule_Code,Priority,Template,Enabled,Version
-Beta,BETA_UNAVAILABLE,100,Active momentum confirmed. Beta context unavailable ({status_detail}).,TRUE,1
-Beta,BETA_WEAK_FIT,90,"Active momentum confirmed. Beta {beta} versus {benchmark}, but benchmark fit is weak (R-squared {r2}); treat Beta as descriptive only.",TRUE,1
-Beta,BETA_DEFENSIVE,80,"Active momentum confirmed. Beta {beta} versus {benchmark} indicates defensive market sensitivity (R-squared {r2}); 126-day residual momentum is {residual_126d}%.",TRUE,1
-Beta,BETA_BALANCED,80,"Active momentum confirmed. Beta {beta} versus {benchmark} indicates balanced market sensitivity (R-squared {r2}); 126-day residual momentum is {residual_126d}%.",TRUE,1
-Beta,BETA_HIGH_SENSITIVITY,80,"Active momentum confirmed. Beta {beta} versus {benchmark} indicates high market sensitivity (R-squared {r2}); 126-day residual momentum is {residual_126d}%.",TRUE,1
-Beta,BETA_VERY_HIGH_SENSITIVITY,80,"Active momentum confirmed. Beta {beta} versus {benchmark} indicates very high market sensitivity (R-squared {r2}); 126-day residual momentum is {residual_126d}%.",TRUE,1
+ETF,ETF_TOP10_MAPPED,100,Active momentum confirmed. Verified top-10 ETF mappings: {mapped_etf_codes}.,TRUE,2
+ETF,ETF_NO_TOP10_MAPPING,90,Active momentum confirmed. No USA-listed ETF mapping could be conservatively verified as a top-ten holding.,TRUE,2
+ETF,ETF_MAPPING_PARTIAL,80,Active momentum confirmed. ETF mapping response could not be validated ({status_detail}); Score is unchanged.,TRUE,2
+ETF,ETF_API_UNAVAILABLE,70,Active momentum confirmed. ETF mapping is unavailable ({status_detail}); Score is unchanged.,TRUE,2
+ETF,ETF_RESPONSE_STALE,60,Active momentum confirmed. ETF mapping data is stale and was not displayed; Score is unchanged.,TRUE,2
