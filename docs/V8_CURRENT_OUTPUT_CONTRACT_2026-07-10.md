@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: ETF-only V8 development contract. Phase 2 and a 10-stock same-quarter technical backtest are complete; Beta has been dropped. Technical validation passed, but V8 operational evidence remains insufficient.
+Status: ETF-only V8 development contract. Phase 2 and the D+1/D+5/D+8 technical tests are complete; Beta has been dropped. Technical validation passed, but the primary D+1 directional evidence does not support activation.
 
 ## Defaults and Active Trigger
 
@@ -151,3 +151,12 @@ docs/V8_COMPREHENSIVE_BACKTEST_CONCLUSION_2026-07-12.md
 ```
 
 The execution did not change this output contract. Score invariance passed on all 620 replayed rows. The same-quarter ETF analysis is assumption-limited and the momentum results do not support V8 operational activation.
+
+Directional validation evidence:
+
+```text
+backtests/V8_Directional_Persistence/runs/V8DIR_20260711T193832Z_0568444
+docs/V8_DIRECTIONAL_PERSISTENCE_CONCLUSION_2026-07-12.md
+```
+
+The directional test does not change `Score`, decisions, ETF triggering, or output fields. It defines the research gate as D+1 Close above D Close, with D+5 and D+8 used as persistence references.

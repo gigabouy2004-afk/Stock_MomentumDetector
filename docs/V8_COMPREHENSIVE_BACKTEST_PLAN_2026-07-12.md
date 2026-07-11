@@ -13,6 +13,17 @@ docs/V8_COMPREHENSIVE_BACKTEST_CONCLUSION_2026-07-12.md
 
 The executed sample does not satisfy this plan's broad evidence targets and does not authorize V8 operational activation.
 
+Directional persistence addendum executed after user clarification:
+
+```text
+Primary: D+1 Close > D Close
+Reference: D+5 and D+8 Close versus D Close
+Run: backtests/V8_Directional_Persistence/runs/V8DIR_20260711T193832Z_0568444
+Conclusion: docs/V8_DIRECTIONAL_PERSISTENCE_CONCLUSION_2026-07-12.md
+```
+
+This D+1 primary contract supersedes the earlier use of 21-day benchmark-adjusted return as the immediate validation gate. Longer horizons remain secondary stability and research references.
+
 ## Objective
 
 Determine whether the complete V8 Stock Momentum Detector is reproducible, free of look-ahead bias, operationally reliable, and supported by out-of-sample evidence before it replaces V7.
@@ -92,7 +103,7 @@ Intraday_Replay_Status = UNAVAILABLE | ARCHIVED_DATA_AVAILABLE
 Live_Quote_Replay_Status = UNAVAILABLE | ARCHIVED_DATA_AVAILABLE
 ```
 
-Daily-only results cannot be represented as proof of exact historical live decisions. A separate archived intraday/live shadow validation is required when suitable source data exists.
+Daily-only results cannot be represented as proof of exact historical live decisions. Archived intraday/live data is not required for the D+1/D+5/D+8 outcome test because intraday movement is not the engine's intended holding horizon. It is relevant only if exact historical reproduction of live timing downgrades is separately required.
 
 ## Research Questions
 
@@ -103,7 +114,7 @@ The final package must answer:
 3. Are results stable across time, sector, market-cap, volatility, exchange, and market regime?
 4. What are the continuation rate, adverse excursion, favorable excursion, and drawdown after a signal?
 5. Are results concentrated in a few tickers or episodes?
-6. How sensitive are conclusions to costs, signal spacing, horizons, and unavailable intraday data?
+6. How sensitive are conclusions to costs, signal spacing, and the D+5/D+8 persistence horizon?
 7. Does the ETF feature consistently return valid current mappings for eligible signals without affecting the stock result?
 8. Where point-in-time ETF evidence exists, what happens to the mapped ETFs after the stock signal?
 9. What limitations prevent stronger claims or operational activation?
@@ -239,10 +250,21 @@ Stratify where feasible by sector and market-cap band. Store the split before co
 ### Primary endpoint
 
 ```text
-Primary_Endpoint = Benchmark_Adjusted_Forward_21D_Return_Pct
-Entry = D+1 Open
-Exit = 21st eligible session Close
+Primary_Endpoint = D1_Close_Above_D_Close
+D1_Audit_Prices = D_Close, D1_Open, D1_Close
+Primary_Pass = D1_Close > D_Close
 ```
+
+D+1 Open-to-Close movement is diagnostic only. It does not replace comparison with the signal-day Close.
+
+Primary persistence references:
+
+```text
+D5_Close_Above_D_Close
+D8_Close_Above_D_Close
+```
+
+The 21-day benchmark-adjusted outcome remains a secondary longer-horizon research measure.
 
 ### Secondary endpoints
 
@@ -304,7 +326,7 @@ Sensitivity runs must include:
 - Episode reset windows of 10, 21, and 42 sessions.
 - SPY and QQQ benchmark alternatives.
 - Adjusted-price policy checks.
-- Inclusion/exclusion of signals with unavailable intraday replay.
+- Daily-EOD replay results with the historical live-timing limitation labeled explicitly but not treated as the outcome target.
 - Equal-weight ticker aggregation so prolific tickers cannot dominate.
 - Leave-one-sector-out, leave-one-year-out, and leave-top-five-tickers-out summaries.
 

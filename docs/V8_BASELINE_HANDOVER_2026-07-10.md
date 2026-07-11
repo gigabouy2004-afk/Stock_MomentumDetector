@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: ETF Phase 2 and the requested 10-stock Q2 same-quarter technical backtest are complete. Technical validation passed, but the Active-signal evidence was insufficient and unfavorable; V8 remains development-only.
+Status: ETF Phase 2, the 10-stock Q2 test, and the April D+1/D+5/D+8 test are complete. Technical validation passed, but the directional evidence was unfavorable; V8 remains development-only.
 
 ## Baseline
 
@@ -116,16 +116,26 @@ Execution summary:
 - Four independent Active episodes: mean 21D return `-0.49%`, mean SPY-adjusted return `-5.13%`, positive rate `25%`.
 - Evidence classification: `TECHNICAL_SAMPLE_COMPLETE_INSUFFICIENT_FOR_BROAD_OPERATIONAL_SIGNOFF`.
 
+Directional persistence run and conclusion:
+
+```text
+backtests/V8_Directional_Persistence/runs/V8DIR_20260711T193832Z_0568444
+docs/V8_DIRECTIONAL_PERSISTENCE_CONCLUSION_2026-07-12.md
+```
+
+The April 30 date was chosen because it had the most April Active signals without using forward outcomes. GOOGL, COST, WMT, and XOM were Active. D+1 direction passed for 1/4, D+5 persistence passed for 1/4, and D+8 persistence passed for 2/4. All 80 independently recomputed metrics matched.
+
 Important boundary:
 
 - The existing five-stock ETF run is a production-path and mapping-quality validation, not a comprehensive V8 momentum backtest.
 - The retired Beta pilot is historical audit evidence and is not part of the active V8 test scope.
 - Current ETF mappings cannot be assigned to historical signals without dated point-in-time holdings evidence.
 - The completed 10-stock technical run does not meet the broad sample targets in the comprehensive plan.
+- The user-defined primary D+1 directional gate did not pass on the April signal-rich date.
 
 Until signoff:
 
 ```text
 V7 = operational baseline
-V8 = development only; broader backtest and operational signoff not passed
+V8 = development only; D+1 directional gate and operational signoff not passed
 ```

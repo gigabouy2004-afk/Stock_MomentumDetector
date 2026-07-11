@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: Beta track closed and dropped; ETF Phases 2A-2C are complete. A 10-stock Q2 same-quarter technical backtest passed integrity checks but returned insufficient and unfavorable Active-signal evidence. V8 remains non-operational.
+Status: Beta track closed and dropped; ETF Phases 2A-2C are complete. Technical backtests pass validation, but both the Q2 episode evidence and the April D+1 directional test are unfavorable. V8 remains non-operational.
 
 ## Version Boundary
 
@@ -185,6 +185,35 @@ The run replayed 620 Q2 daily rows across 10 stocks, checked one deterministic r
 The four independent Active episodes returned a mean `-0.49%` over 21 sessions and a mean `-5.13%` versus SPY; only one of four was positive. This is insufficient for broad inference and unfavorable within the tested sample.
 
 ETF mappings used a same-calendar-quarter stability assumption. All accepted holdings evidence was dated 2026-05-29 and passed top-ten validation, but the result is not strict signal-date point-in-time historical evidence.
+
+## D+1 Direction and D+5/D+8 Persistence Result
+
+User clarification establishes that V8 targets multi-day trades, not intraday movement. The immediate validation gate is now:
+
+```text
+D+1 Close > D Close
+```
+
+D+1 Open and Close are audited. D+5 and D+8 are persistence references.
+
+April date selection used the maximum Active count without looking at forward outcomes. April 30 produced four Active signals: GOOGL, COST, WMT, and XOM.
+
+Canonical run and conclusion:
+
+```text
+backtests/V8_Directional_Persistence/runs/V8DIR_20260711T193832Z_0568444
+docs/V8_DIRECTIONAL_PERSISTENCE_CONCLUSION_2026-07-12.md
+```
+
+Results:
+
+- D+1 direction passed for 1/4 Active signals.
+- D+5 persistence passed for 1/4.
+- D+8 persistence passed for 2/4.
+- Mean Active move was `-0.33%` at D+1, `-0.79%` at D+5, and `-0.55%` at D+8 versus the signal-day Close.
+- Independent validation recomputed 80 metrics with zero failures.
+
+The primary D+1 directional hypothesis was not supported in this sample.
 
 ## Operational Signoff Gates
 

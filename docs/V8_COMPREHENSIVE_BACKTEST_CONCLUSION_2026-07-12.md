@@ -4,6 +4,14 @@ Date: 2026-07-12
 
 Status: Technical execution and independent validation passed. The sample does not support V8 operational activation; V7 remains the operational baseline.
 
+Subsequent user-defined directional test:
+
+```text
+docs/V8_DIRECTIONAL_PERSISTENCE_CONCLUSION_2026-07-12.md
+```
+
+The later test uses D+1 Close above D Close as the primary gate and D+5/D+8 as persistence references. It also did not support activation.
+
 ## Canonical Run
 
 ```text
