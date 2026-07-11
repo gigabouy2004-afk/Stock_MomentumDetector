@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: ETF Phase 2, the 10-stock Q2 test, and the April D+1/D+5/D+8 test are complete. Technical validation passed, but the directional evidence was unfavorable; V8 remains development-only.
+Status: ETF Phase 2 and the original/alternate directional tests are complete. XOM was replaced by PANW. PANW passed all horizons after its first Active signal, but the common-date D+1 cohort still failed; V8 remains development-only.
 
 ## Baseline
 
@@ -125,6 +125,24 @@ docs/V8_DIRECTIONAL_PERSISTENCE_CONCLUSION_2026-07-12.md
 
 The April 30 date was chosen because it had the most April Active signals without using forward outcomes. GOOGL, COST, WMT, and XOM were Active. D+1 direction passed for 1/4, D+5 persistence passed for 1/4, and D+8 persistence passed for 2/4. All 80 independently recomputed metrics matched.
 
+Alternate-code evidence:
+
+```text
+backtests/V8_Comprehensive/runs/V8FULL_20260711T194644Z_3ed85d1_20260713
+backtests/V8_Directional_Persistence/runs/V8DIR_20260711T195008Z_3ed85d1
+docs/V8_ALT_CODES_DIRECTIONAL_CONCLUSION_2026-07-12.md
+```
+
+Alternate result:
+
+- XOM removed; PANW added.
+- PANW -> HACK 9.65%, independently validated rank 1, holdings dated 2026-06-30.
+- April 30 Active cohort: GOOGL, COST, WMT.
+- Common-date pass rates: D+1 `1/3`, D+5 `1/3`, D+8 `2/3`.
+- PANW was rejected on April 30 but rose `20.23%` by D+8.
+- PANW first became Active June 9 and then passed D+1 `1.04%`, D+5 `7.44%`, and D+8 `9.93%`.
+- Alternate validators reported zero failures across 620 execution rows, 30 random returns, and 88 directional metrics.
+
 Important boundary:
 
 - The existing five-stock ETF run is a production-path and mapping-quality validation, not a comprehensive V8 momentum backtest.
@@ -132,6 +150,7 @@ Important boundary:
 - Current ETF mappings cannot be assigned to historical signals without dated point-in-time holdings evidence.
 - The completed 10-stock technical run does not meet the broad sample targets in the comprehensive plan.
 - The user-defined primary D+1 directional gate did not pass on the April signal-rich date.
+- PANW is a documented confirmation-lag case: strong post-activation behavior, but late recognition of the April move.
 
 Until signoff:
 

@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: Beta track closed and dropped; ETF Phases 2A-2C are complete. Technical backtests pass validation, but both the Q2 episode evidence and the April D+1 directional test are unfavorable. V8 remains non-operational.
+Status: Beta track closed and dropped; ETF Phases 2A-2C are complete. Technical backtests pass validation. The alternate PANW signal passed D+1/D+5/D+8 after activation, but the common-date Active cohort still failed the primary D+1 gate. V8 remains non-operational.
 
 ## Version Boundary
 
@@ -214,6 +214,24 @@ Results:
 - Independent validation recomputed 80 metrics with zero failures.
 
 The primary D+1 directional hypothesis was not supported in this sample.
+
+## Alternate-Code Result: PANW Replaces XOM
+
+PANW replaced XOM and was independently verified as HACK's number-one holding at `9.65%`, with holdings dated 2026-06-30.
+
+Canonical evidence:
+
+```text
+backtests/V8_Comprehensive/runs/V8FULL_20260711T194644Z_3ed85d1_20260713
+backtests/V8_Directional_Persistence/runs/V8DIR_20260711T195008Z_3ed85d1
+docs/V8_ALT_CODES_DIRECTIONAL_CONCLUSION_2026-07-12.md
+```
+
+On April 30, PANW was rejected at Score 16 for weekly downtrend and benchmark underperformance, then gained `0.98%` at D+1, `9.60%` at D+5, and `20.23%` at D+8.
+
+PANW's first Active signal occurred June 9 at Score 100. From that Active date it gained `1.04%` at D+1, `7.44%` at D+5, and `9.93%` at D+8, passing all requested horizons.
+
+The replacement case shows that V8 can identify strong PANW momentum, but only after a material confirmation delay. The common April 30 Active cohort remained below the primary gate at 1/3 D+1 passes.
 
 ## Operational Signoff Gates
 

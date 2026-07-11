@@ -24,6 +24,17 @@ Conclusion: docs/V8_DIRECTIONAL_PERSISTENCE_CONCLUSION_2026-07-12.md
 
 This D+1 primary contract supersedes the earlier use of 21-day benchmark-adjusted return as the immediate validation gate. Longer horizons remain secondary stability and research references.
 
+Alternate-code execution:
+
+```text
+XOM replaced by PANW
+Comprehensive run: backtests/V8_Comprehensive/runs/V8FULL_20260711T194644Z_3ed85d1_20260713
+Directional run: backtests/V8_Directional_Persistence/runs/V8DIR_20260711T195008Z_3ed85d1
+Conclusion: docs/V8_ALT_CODES_DIRECTIONAL_CONCLUSION_2026-07-12.md
+```
+
+PANW passed D+1/D+5/D+8 after its first Active signal but exposed a potential confirmation lag that requires a separate false-negative study before gate changes.
+
 ## Objective
 
 Determine whether the complete V8 Stock Momentum Detector is reproducible, free of look-ahead bias, operationally reliable, and supported by out-of-sample evidence before it replaces V7.

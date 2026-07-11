@@ -160,3 +160,11 @@ docs/V8_DIRECTIONAL_PERSISTENCE_CONCLUSION_2026-07-12.md
 ```
 
 The directional test does not change `Score`, decisions, ETF triggering, or output fields. It defines the research gate as D+1 Close above D Close, with D+5 and D+8 used as persistence references.
+
+Alternate-code evidence:
+
+```text
+docs/V8_ALT_CODES_DIRECTIONAL_CONCLUSION_2026-07-12.md
+```
+
+PANW replaced XOM without changing this output contract. The alternate run identified a possible confirmation-lag issue but made no scoring or gate change.

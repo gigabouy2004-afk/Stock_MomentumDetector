@@ -4,6 +4,12 @@ Date: 2026-07-12
 
 Status: Execution and independent validation passed. The primary D+1 directional hypothesis was not supported in the selected April sample.
 
+Subsequent alternate-code run replaced XOM with PANW:
+
+```text
+docs/V8_ALT_CODES_DIRECTIONAL_CONCLUSION_2026-07-12.md
+```
+
 ## User-Defined Intent
 
 V8 is intended to identify longer-duration momentum trades, not predict intraday movement.
