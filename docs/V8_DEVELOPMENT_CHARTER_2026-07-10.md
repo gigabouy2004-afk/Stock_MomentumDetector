@@ -2,9 +2,9 @@
 
 Original date: 2026-07-10
 
-Updated: 2026-07-11
+Updated: 2026-07-12
 
-Status: Beta track closed and dropped; ETF Phases 2A-2C and the five-stock validation are complete. V8 remains non-operational pending explicit user signoff.
+Status: Beta track closed and dropped; ETF Phases 2A-2C and the five-stock validation are complete. A comprehensive V8 momentum-and-ETF backtest plan is prepared; execution and operational signoff remain pending.
 
 ## Version Boundary
 
@@ -152,6 +152,20 @@ Full conclusion:
 docs/V8_ETF_PHASE2_CONCLUSION_2026-07-11.md
 ```
 
+## Comprehensive Backtest Requirement
+
+The five-stock Phase 2 run validates the ETF production path and sample mapping quality. It is not a broad historical test of V8 momentum-signal performance.
+
+Before V8 can replace V7, execute the approved comprehensive plan:
+
+```text
+docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md
+```
+
+The plan requires deterministic point-in-time replay, independent Active episodes, chronological validation and final-test partitions, matched WAIT controls, frozen V7 comparison, forward return and drawdown analysis, offline reproducibility, and expanded ETF validation.
+
+Historical ETF results are permitted only when the mapping and holdings evidence existed at the signal date. The current reverse page cannot be applied retrospectively to old signals. If a suitable historical source is unavailable, combined V8-plus-ETF outcome validation must use a prospective shadow cohort.
+
 ## Operational Signoff Gates
 
 V8 may replace V7 only after:
@@ -163,6 +177,10 @@ V8 may replace V7 only after:
 - US whitelist, leverage exclusions, ordering, caching, timeout, and failure tests pass.
 - `Score` invariance passes.
 - ETF message wording is reviewed and approved by the user.
+- The comprehensive V8 backtest and independent offline validation are complete.
+- Chronological validation, final-test, ticker-holdout, matched WAIT, V7 comparison, and robustness evidence are reviewed.
+- Historical ETF claims use point-in-time evidence, or the prospective-only limitation is explicitly accepted.
+- The comprehensive conclusion records the primary endpoint's evidence classification.
 - Explicit user operational signoff is recorded.
 
 Until then:

@@ -2,9 +2,9 @@
 
 Original date: 2026-07-10
 
-Updated: 2026-07-11
+Updated: 2026-07-12
 
-Status: ETF Phase 2 implementation and five-stock validation complete; V8 awaits explicit operational signoff.
+Status: ETF Phase 2 implementation and five-stock validation complete. Comprehensive momentum-and-ETF backtesting is planned but not executed; V8 remains development-only.
 
 ## Baseline
 
@@ -74,9 +74,12 @@ The separate backtest may call returned ETFs' holdings pages solely to validate 
 
 Before V8 becomes operational:
 
-1. Review the completed Phase 2 conclusion and sample messages.
-2. Accept the documented public-page schema/freshness/completeness limitations.
-3. Record explicit V8 operational signoff.
+1. Review and approve the comprehensive backtest design.
+2. Implement the deterministic replay runner, independent validator, and required tests.
+3. Execute development, validation, final-test, ticker-holdout, matched WAIT, V7 comparison, and robustness stages.
+4. Expand ETF functional validation and use point-in-time historical mappings or a prospective shadow cohort for combined outcomes.
+5. Review the completed backtest conclusion, sample ETF messages, and all documented data limitations.
+6. Record explicit V8 operational signoff.
 
 Canonical evidence:
 
@@ -85,9 +88,22 @@ backtests/V8_ETF_Phase2/runs/V8ETF_20260711T135316Z_6fa10c6
 docs/V8_ETF_PHASE2_CONCLUSION_2026-07-11.md
 ```
 
+Comprehensive execution specification:
+
+```text
+docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md
+```
+
+Important boundary:
+
+- The existing five-stock ETF run is a production-path and mapping-quality validation, not a comprehensive V8 momentum backtest.
+- The retired Beta pilot is historical audit evidence and is not part of the active V8 test scope.
+- Current ETF mappings cannot be assigned to historical signals without dated point-in-time holdings evidence.
+- No comprehensive V8 run ID exists yet.
+
 Until signoff:
 
 ```text
 V7 = operational baseline
-V8 = development only
+V8 = development only; comprehensive backtest pending
 ```
