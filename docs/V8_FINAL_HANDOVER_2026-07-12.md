@@ -12,7 +12,7 @@ Rebuild workflow approval, 2026-07-13: begin with a basic V8 engine, add one ind
 
 Basic Foundation implementation, 2026-07-13: `Momentum_Detector_V8_Basic.py` now provides the standalone EMA/MACD eligibility path with no Score or post-Foundation indicators. Frozen 80-row replay and independent validation passed. Report: `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`.
 
-Calculation-only indicator update, 2026-07-13: RSI, ADX/+DI/-DI, True Range/ATR/ATR%, OBV/OBV EMA and Aroon calculations are available with no score or gate authority. Foundation regression remained unchanged on 80/80 rows. Report: `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`.
+Calculation-only indicator update, corrected 2026-07-13: RSI, ADX/+DI/-DI, True Range/ATR/ATR%, OBV/OBV EMA and Aroon calculations are available only after `Foundation_Eligible = True`, with no score or gate authority. The canonical replay executed them on 25 eligible rows, skipped all 55 ineligible rows, and preserved Foundation results on 80/80 rows. Report: `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`.
 
 ## Start Here
 

@@ -252,26 +252,26 @@ def main():
         failures.extend(
             f"{ticker}/{signal_date.date()}/{failure}" for failure in row_failures
         )
-        recomputed_row = {
-            "Ticker": ticker,
-            "As_Of_Date": signal_date.date().isoformat(),
-            **values,
-            "Foundation_State": state,
-            "Foundation_Eligible": eligible,
-        }
-        if foundation_gated_indicators:
-            recomputed_row["Indicator_Module_Status"] = (
-                "EXECUTED_FOUNDATION_ELIGIBLE"
-                if eligible
-                else "NOT_RUN_FOUNDATION_INELIGIBLE"
-            )
-        recomputed_row.update(
+        recomputed.append(
             {
+                "Ticker": ticker,
+                "As_Of_Date": signal_date.date().isoformat(),
+                **values,
+                "Foundation_State": state,
+                "Foundation_Eligible": eligible,
+                "Indicator_Module_Status": (
+                    "EXECUTED_FOUNDATION_ELIGIBLE"
+                    if eligible and foundation_gated_indicators
+                    else (
+                        "NOT_RUN_FOUNDATION_INELIGIBLE"
+                        if foundation_gated_indicators
+                        else "LEGACY_NOT_APPLICABLE"
+                    )
+                ),
                 "Validation_Status": "PASS" if not row_failures else "FAIL",
                 "Validation_Failures": ";".join(row_failures),
             }
         )
-        recomputed.append(recomputed_row)
     checks["Independent_Formula_And_Outcome_Recompute"] = not failures
     regression_path = run_dir / "outputs" / "foundation_regression.csv"
     if regression_path.is_file():

@@ -2,11 +2,22 @@
 
 Date: 2026-07-13
 
-Status: raw indicator calculations implemented and validated. No indicator in this layer has scoring, ranking, WAIT, rejection, Foundation, or trade-eligibility authority.
+Status: corrected Foundation-gated calculation architecture implemented and validated. The EMA200/MACD Foundation is evaluated first. Only Foundation-eligible stocks may enter this indicator module. No indicator in this layer has scoring, ranking, WAIT, rejection, Foundation, or trade-eligibility authority.
+
+Architectural correction: schema `V8_BASIC_FOUNDATION_2` calculated the indicator set before Foundation classification. That execution order was incorrect even though the calculations had no decision authority. Schema `V8_BASIC_FOUNDATION_3` supersedes it and enforces the Foundation boundary in code, tests, output status and independent validation.
 
 ## 1. User-Authorized Scope
 
 Add calculations for existing basic stock indicators while preserving the already validated Foundation result.
+
+Mandatory execution order:
+
+```text
+1. Calculate EMA200 and MACD only.
+2. Determine Foundation eligibility.
+3. If Foundation_Eligible = False: stop; do not call the indicator module.
+4. If Foundation_Eligible = True: calculate RSI/ADX/ATR/OBV/Aroon.
+```
 
 This phase is calculation only. It does not decide:
 
@@ -116,7 +127,7 @@ Active development engine:
 
 ```text
 Momentum_Detector_V8_Basic.py
-Engine version: V8_BASIC_FOUNDATION_2
+Engine version: V8_BASIC_FOUNDATION_3
 ```
 
 New fields:
@@ -124,6 +135,8 @@ New fields:
 ```text
 Indicator_Set_ID
 Indicator_Authority
+Indicator_Module_Status
+Indicator_Module_Reason
 RSI_Period
 RSI
 ADX_Period
@@ -153,9 +166,18 @@ Any indicator score
 Any indicator gate
 ```
 
+`Indicator_Module_Status` is auditable:
+
+```text
+EXECUTED_FOUNDATION_ELIGIBLE
+NOT_RUN_FOUNDATION_INELIGIBLE
+```
+
+For an ineligible stock, all post-Foundation indicator value fields are blank.
+
 ## 7. Functional Tests
 
-The basic-engine test module now contains 12 tests.
+The basic-engine test module contains 15 focused tests. The complete repository suite contains 37 tests.
 
 Calculation coverage:
 
@@ -167,6 +189,10 @@ Calculation coverage:
 - raw True Range equals an independent three-component calculation.
 - custom indicator periods are applied and recorded.
 - all fields preserve no-look-ahead historical evaluation.
+- the indicator function rejects calls without confirmed Foundation eligibility;
+- ineligible stocks never call the indicator function;
+- eligible stocks call the indicator function only after Foundation classification;
+- ineligible output rows contain no post-Foundation indicator values.
 
 Existing Foundation coverage remains:
 
@@ -182,7 +208,7 @@ Existing Foundation coverage remains:
 Canonical run:
 
 ```text
-backtests/V8_Basic_Foundation/runs/V8BASICFOUND_20260712T211044Z_513bf26
+backtests/V8_Basic_Foundation/runs/V8BASICFOUND_20260712T211805Z_7b3a3a0
 ```
 
 Scope:
@@ -201,12 +227,16 @@ Complete 20 x 4 grid: PASS
 Foundation-only decision schema: PASS
 No Score output: PASS
 Calculation-only authority: PASS
+Foundation-first execution gate: PASS
 EMA/MACD/Foundation recomputation: PASS
-RSI recomputation: PASS
-ADX/+DI/-DI recomputation: PASS
-True Range/ATR/ATR% recomputation: PASS
-OBV/OBV EMA recomputation: PASS
-Aroon recomputation: PASS
+RSI recomputation for 25 eligible rows: PASS
+ADX/+DI/-DI recomputation for 25 eligible rows: PASS
+True Range/ATR/ATR% recomputation for 25 eligible rows: PASS
+OBV/OBV EMA recomputation for 25 eligible rows: PASS
+Aroon recomputation for 25 eligible rows: PASS
+Indicator module executions: 25 eligible rows only
+Indicator module skipped: all 55 ineligible rows
+Ineligible rows containing indicator values: 0
 D+1/D+5/D+8 recomputation: PASS
 Checksums: PASS
 Failures: 0
@@ -240,17 +270,17 @@ Therefore, adding raw calculations did not alter Foundation eligibility or its h
 
 ## 10. Calculation Range Sanity Check
 
-Across the 80 frozen observations:
+Across the 25 Foundation-eligible observations for which the indicator module executed:
 
 | Field | Minimum | Mean | Maximum |
 |---|---:|---:|---:|
-| RSI | 33.47 | 55.80 | 87.40 |
-| ADX | 11.38 | 23.69 | 50.91 |
-| +DI | 13.32 | 29.94 | 59.70 |
-| −DI | 6.75 | 23.88 | 38.88 |
-| ATR% | 2.17% | 4.52% | 8.74% |
-| Aroon Up | 0.00 | 66.88 | 100.00 |
-| Aroon Down | 0.00 | 41.96 | 100.00 |
+| RSI | 57.85 | 69.12 | 87.40 |
+| ADX | 13.96 | 25.12 | 50.91 |
+| +DI | 29.07 | 38.42 | 59.70 |
+| -DI | 6.75 | 16.82 | 25.35 |
+| ATR% | 2.31% | 4.31% | 5.56% |
+| Aroon Up | 85.71 | 98.86 | 100.00 |
+| Aroon Down | 0.00 | 28.86 | 64.29 |
 
 These ranges are a calculation sanity check only. They are not proposed bands and do not authorize scoring or gating.
 
@@ -279,7 +309,7 @@ python Momentum_Detector_V8_Basic.py NVDA --rsi-period 10 --adx-period 12 --atr-
 Validate frozen calculations:
 
 ```powershell
-python Validate_Momentum_Detector_V8_Basic_Foundation.py backtests/V8_Basic_Foundation/runs/V8BASICFOUND_20260712T211044Z_513bf26
+python Validate_Momentum_Detector_V8_Basic_Foundation.py backtests/V8_Basic_Foundation/runs/V8BASICFOUND_20260712T211805Z_7b3a3a0
 ```
 
 ## 12. Approval Boundary and Next Step
@@ -290,6 +320,7 @@ Approved by this milestone:
 The calculations are correctly implemented and auditable.
 They do not alter Foundation eligibility.
 They have no decision authority.
+They execute only after Foundation eligibility is confirmed.
 ```
 
 Not approved:

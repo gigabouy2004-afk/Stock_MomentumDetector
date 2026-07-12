@@ -10,7 +10,7 @@ User workflow confirmation, 2026-07-13: rebuild V8 from a basic engine, introduc
 
 Implementation update, 2026-07-13: the standalone Foundation-only engine is implemented in `Momentum_Detector_V8_Basic.py` and validated in `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`. It contains no post-Foundation Score or indicator authority and does not replace the legacy comparator or V7.
 
-Calculation-layer update, 2026-07-13: raw RSI, ADX/DMI, True Range/ATR, OBV and Aroon calculations were added with explicit `CALCULATION_ONLY` authority. The 80-row independent validation and Foundation regression passed with zero changes. Report: `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`.
+Calculation-layer update, 2026-07-13: raw RSI, ADX/DMI, True Range/ATR, OBV and Aroon calculations were added with explicit `CALCULATION_ONLY` authority and a hard `Foundation_Eligible = True` entry prerequisite. The corrected 80-row replay executed the indicator module for all 25 eligible rows, skipped all 55 ineligible rows, and preserved Foundation results on 80/80 rows. Report: `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`.
 
 Companion standard: `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md` defines what is carried forward, rejected, research-only, and required to pass backtesting before entering an operational decision path.
 
@@ -123,6 +123,8 @@ The Foundation awards no points. It declares eligibility and state.
 ### Stage 2 — Evidence capture
 
 For Foundation-qualified stocks, the engine may calculate additional indicators. Calculation alone gives an indicator no authority over the decision.
+
+This is a hard execution boundary, not merely a decision rule. If `Foundation_Eligible = False`, the engine must stop before the post-Foundation indicator module; the post-Foundation values must remain blank and the reason for skipping must be recorded.
 
 Every additional indicator begins as one of:
 
