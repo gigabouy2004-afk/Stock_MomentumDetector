@@ -2,7 +2,7 @@
 
 Date: 2026-07-13
 
-Status: standalone Foundation-only engine implemented and functionally validated. It is ready for user review before the first post-Foundation indicator is selected. It has not replaced the legacy V8 comparator or V7.
+Status: historical Foundation-only schema and frozen baseline remain valid. The active basic engine subsequently added calculation-only RSI, ADX/DMI, True Range/ATR, OBV and Aroon fields without changing Foundation eligibility. See `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`. No score or gate was added.
 
 ## 1. Delivered Scope
 

@@ -12,6 +12,8 @@ Rebuild workflow approval, 2026-07-13: begin with a basic V8 engine, add one ind
 
 Basic Foundation implementation, 2026-07-13: `Momentum_Detector_V8_Basic.py` now provides the standalone EMA/MACD eligibility path with no Score or post-Foundation indicators. Frozen 80-row replay and independent validation passed. Report: `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`.
 
+Calculation-only indicator update, 2026-07-13: RSI, ADX/+DI/-DI, True Range/ATR/ATR%, OBV/OBV EMA and Aroon calculations are available with no score or gate authority. Foundation regression remained unchanged on 80/80 rows. Report: `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`.
+
 ## Start Here
 
 Read in this order:
@@ -20,11 +22,12 @@ Read in this order:
 2. `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`
 3. `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`
 4. `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`
-5. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-6. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-7. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
-8. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
-9. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
+5. `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`
+6. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+7. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+8. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
+9. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
+10. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
 
 ## Mainline Behavior
 

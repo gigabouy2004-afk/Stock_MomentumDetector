@@ -2,7 +2,7 @@
 
 Date: 2026-07-13
 
-Status: development workflow approved by the user. The basic Foundation-only engine was implemented and independently validated on 2026-07-13. Implementation report: `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`.
+Status: development workflow approved by the user. The basic Foundation-only engine and the calculation-only V1-V3 indicator layer were implemented and independently validated on 2026-07-13. Reports: `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md` and `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`.
 
 ## 1. User Direction Recorded
 
@@ -266,4 +266,15 @@ Rows independently recomputed: 80/80
 Validation failures: 0
 Score/benchmark/ETF fields: absent
 Next gate: user review before selecting the first post-Foundation indicator
+```
+
+Calculation-only update:
+
+```text
+Indicator set: RSI, ADX/+DI/-DI, True Range/ATR/ATR%, OBV/OBV EMA, Aroon
+Authority: CALCULATION_ONLY
+Frozen rows independently recomputed: 80/80
+Foundation rows changed: 0/80
+Scores or gates added: none
+Next gate: choose one indicator for isolated value/rule backtesting
 ```
