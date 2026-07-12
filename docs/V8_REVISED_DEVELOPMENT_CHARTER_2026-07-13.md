@@ -16,6 +16,8 @@ RSI base-layer update, 2026-07-13: RSI(14) is the first indicator with a configu
 
 Placeholder clarification, 2026-07-13: RSI 30 and 65 are functional-test placeholders, not accepted trading defaults. Every future indicator period/value/range must live in configuration variables and publish a lifecycle status: placeholder, research candidate or explicitly user-approved operational value. Generic professional-practice claims provide no authority.
 
+V1-V7 value audit, 2026-07-13: the exact historical formulas, periods, thresholds, score effects and removal points are recorded in `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`. The audit confirms that RSI and MACD disappeared in V4, ADX/DMI and OBV disappeared in V5, ATR changed formula in V5, and V7 retained the replacement trend/RS/breakout/accumulation/weekly framework.
+
 Companion standard: `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md` defines what is carried forward, rejected, research-only, and required to pass backtesting before entering an operational decision path.
 
 ## 1. Mission
@@ -465,10 +467,11 @@ Read in this order:
 4. `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`
 5. `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`
 6. `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`
-7. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-8. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-9. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
-10. the frozen run manifest and validation summary
+7. `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`
+8. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+9. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+10. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
+11. the frozen run manifest and validation summary
 
 Do not use the 2026-07-10 charter as current design authority.
 

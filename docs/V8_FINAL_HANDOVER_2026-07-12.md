@@ -18,6 +18,8 @@ RSI base-layer update, 2026-07-13: RSI(14) now has configurable inclusive limits
 
 Placeholder clarification, 2026-07-13: RSI 30/65 exists only to prove that configured lower/upper cutoffs execute correctly. It is not a recommended or operationally approved range. All future indicator defaults, periods and limits must be named configuration variables with explicit placeholder/research/approved metadata.
 
+V1-V7 indicator audit, 2026-07-13: source-code values and version changes for EMA/MACD/RSI/ADX/DMI/ATR/OBV/Aroon and the V4-V7 replacement framework are consolidated in `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`. Missing V7 indicators are traced back to their last source implementation rather than inferred.
+
 ## Start Here
 
 Read in this order:
@@ -28,11 +30,12 @@ Read in this order:
 4. `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`
 5. `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`
 6. `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`
-7. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-8. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-9. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
-10. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
-11. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
+7. `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`
+8. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+9. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+10. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
+11. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
+12. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
 
 ## Mainline Behavior
 
