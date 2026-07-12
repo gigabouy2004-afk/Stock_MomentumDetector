@@ -3,3 +3,4 @@ backtests/V8_Beta_Release1/runs/** -text
 backtests/V8_ETF_Phase2/runs/** -text
 backtests/V8_Comprehensive/runs/** -text
 backtests/V8_Directional_Persistence/runs/** -text
+backtests/V8_MACD_Research/runs/** -text

@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: Beta track closed and dropped; ETF Phases 2A-2C are complete. Technical backtests pass validation. The alternate PANW signal passed D+1/D+5/D+8 after activation, but the common-date Active cohort still failed the primary D+1 gate. V8 remains non-operational.
+Status: Beta track closed and dropped; ETF Phases 2A-2C are complete. Configurable MACD research is implemented. Fibonacci settings improved D+1 detection in the first study, but MACD does not yet change V8 Score or decisions. V8 remains non-operational.
 
 ## Version Boundary
 
@@ -232,6 +232,44 @@ On April 30, PANW was rejected at Score 16 for weekly downtrend and benchmark un
 PANW's first Active signal occurred June 9 at Score 100. From that Active date it gained `1.04%` at D+1, `7.44%` at D+5, and `9.93%` at D+8, passing all requested horizons.
 
 The replacement case shows that V8 can identify strong PANW momentum, but only after a material confirmation delay. The common April 30 Active cohort remained below the primary gate at 1/3 D+1 passes.
+
+## Configurable MACD Research
+
+V8 previously had no MACD implementation. V1-V3 used standard `12/26/9`; V8 now exposes configurable MACD periods while keeping `12/26/9` as the default.
+
+```text
+--macd-fast
+--macd-slow
+--macd-signal
+```
+
+Published audit fields:
+
+```text
+MACD_Fast_Period
+MACD_Slow_Period
+MACD_Signal_Period
+MACD_Line
+MACD_Signal_Line
+MACD_Histogram
+MACD_Bullish_Positive
+```
+
+MACD remains informational and research-only. It does not affect Score, component scores, decisions, ranking, or ETF triggering.
+
+Canonical evidence:
+
+```text
+backtests/V8_MACD_Research/runs/V8MACD_20260712T072722Z_1f1ac52
+docs/V8_MACD_RESEARCH_CONCLUSION_2026-07-12.md
+docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md
+```
+
+The corrected foundation study requires both `Close > EMA200` and bullish-positive MACD. The proposed `8/21/5` setting improved D+1 pass rate from `52.63%` under standard `12/26/9` to `62.96%`, across 27 versus 19 episodes. It did not dominate D+5/D+8 persistence.
+
+The first study identifies `8/21/5` and `8/21/8` as holdout candidates. No production setting is approved until multi-regime and untouched-holdout testing is complete.
+
+Lineage discovery confirms that EMA200 was never removed. MACD was removed in the V3-to-V4 long-term-engine rewrite without a separately versioned rationale. The intended Foundation -> Setup -> Momentum architecture is now recorded for review.
 
 ## Operational Signoff Gates
 

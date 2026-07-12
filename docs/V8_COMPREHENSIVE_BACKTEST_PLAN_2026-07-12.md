@@ -35,6 +35,16 @@ Conclusion: docs/V8_ALT_CODES_DIRECTIONAL_CONCLUSION_2026-07-12.md
 
 PANW passed D+1/D+5/D+8 after its first Active signal but exposed a potential confirmation lag that requires a separate false-negative study before gate changes.
 
+MACD configuration study:
+
+```text
+Run: backtests/V8_MACD_Research/runs/V8MACD_20260712T072722Z_1f1ac52
+Conclusion: docs/V8_MACD_RESEARCH_CONCLUSION_2026-07-12.md
+Lineage: docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md
+```
+
+The first comparison tested standard `12/26/9` and four Fibonacci variants. `8/21/5` improved D+1 detection but did not dominate longer persistence. MACD remains outside production scoring until multi-regime and holdout validation.
+
 ## Objective
 
 Determine whether the complete V8 Stock Momentum Detector is reproducible, free of look-ahead bias, operationally reliable, and supported by out-of-sample evidence before it replaces V7.

@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: ETF-only V8 development contract. Phase 2 and the D+1/D+5/D+8 technical tests are complete; Beta has been dropped. Technical validation passed, but the primary D+1 directional evidence does not support activation.
+Status: ETF-only V8 development contract with informational configurable MACD audit fields. MACD research is not permitted to change Score or decisions. V8 remains non-operational.
 
 ## Defaults and Active Trigger
 
@@ -168,3 +168,42 @@ docs/V8_ALT_CODES_DIRECTIONAL_CONCLUSION_2026-07-12.md
 ```
 
 PANW replaced XOM without changing this output contract. The alternate run identified a possible confirmation-lag issue but made no scoring or gate change.
+
+## Configurable MACD Audit Contract
+
+Default periods:
+
+```text
+12/26/9
+```
+
+Configurable CLI fields:
+
+```text
+--macd-fast
+--macd-slow
+--macd-signal
+```
+
+Output fields:
+
+```text
+MACD_Fast_Period
+MACD_Slow_Period
+MACD_Signal_Period
+MACD_Line
+MACD_Signal_Line
+MACD_Histogram
+MACD_Bullish_Positive
+```
+
+These fields are informational. Changing the periods cannot change `Score`, `Final_Decision`, component scores, ranking, or ETF eligibility unless a later versioned policy is explicitly approved.
+
+Research evidence:
+
+```text
+docs/V8_MACD_RESEARCH_CONCLUSION_2026-07-12.md
+docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md
+```
+
+The lineage review confirms that V1-V3 required EMA200 and MACD before Phase-2 scoring, while V4 removed MACD during the long-term-engine rewrite. A restored production `Foundation_Status` is proposed for review but is not part of the current output contract.

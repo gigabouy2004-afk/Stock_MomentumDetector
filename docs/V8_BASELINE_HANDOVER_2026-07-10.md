@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: ETF Phase 2 and the original/alternate directional tests are complete. XOM was replaced by PANW. PANW passed all horizons after its first Active signal, but the common-date D+1 cohort still failed; V8 remains development-only.
+Status: ETF Phase 2, directional tests, and the first configurable MACD comparison are complete. Faster Fibonacci MACD settings improved D+1 detection, but no MACD production rule is signed off. V8 remains development-only.
 
 ## Baseline
 
@@ -151,6 +151,28 @@ Important boundary:
 - The completed 10-stock technical run does not meet the broad sample targets in the comprehensive plan.
 - The user-defined primary D+1 directional gate did not pass on the April signal-rich date.
 - PANW is a documented confirmation-lag case: strong post-activation behavior, but late recognition of the April move.
+
+MACD research evidence:
+
+```text
+backtests/V8_MACD_Research/runs/V8MACD_20260712T072722Z_1f1ac52
+docs/V8_MACD_RESEARCH_CONCLUSION_2026-07-12.md
+docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md
+```
+
+MACD handover summary:
+
+- V8 previously had no MACD; V1-V3 used `12/26/9`.
+- V8 MACD is now configurable through CLI and stored in output audit fields.
+- Defaults remain `12/26/9`.
+- MACD does not change Score or Final Decision.
+- Five predeclared settings produced 122 independent combined EMA200+MACD foundation episodes.
+- `8/21/5`: D+1 `62.96%`, D+5 `62.96%`, D+8 `62.96%`.
+- `12/26/9`: D+1 `52.63%`, D+5 `73.68%`, D+8 `73.68%`.
+- `8/21/8` provided the strongest balanced fast-setting profile.
+- Independent validator recomputed 1,586 metrics with zero failures.
+- Discovery: EMA200 remained present; MACD was removed in V4's long-term rewrite with no documented evidence-based justification.
+- Next gate: frozen multi-regime and untouched-holdout comparison before MACD affects production.
 
 Until signoff:
 
