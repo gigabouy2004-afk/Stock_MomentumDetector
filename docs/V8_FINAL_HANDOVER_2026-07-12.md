@@ -22,6 +22,8 @@ V1-V7 indicator audit, 2026-07-13: source-code values and version changes for EM
 
 V1-V3 research baseline, 2026-07-13: the exact V1-V3 indicator values are consolidated in a configurable research-only evaluator and replayed across 20 technology stocks and four dates. All 240 rows passed independent recalculation. V1/V2 qualified 7 observations without improving longer-horizon results over Foundation alone; V3 qualified 11, weakened D+1 direction and showed a small-sample D+8 improvement. The values are frozen for isolated research, not approved for mainstream V8. Report: `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`.
 
+Expanded composite-Score result, 2026-07-13: momentum selection is now explicitly evaluated as the culmination of the configured health signals. The unchanged V1-V3 configurations were replayed on 50 technology and 50 industrial stocks across 12 dates. The 3,600-row run passed independent validation. V1/V2 Score >=20 improved D+1/D+5/D+8 positive rates over the Foundation+DMI cohort, with the strongest separation in technology. V3 added 75 weaker signals, and higher raw Score was not monotonically better. Report: `docs/V8_COMPOSITE_SCORE_EXPANDED_BACKTEST_2026-07-13.md`.
+
 ## Start Here
 
 Read in this order:
@@ -34,11 +36,12 @@ Read in this order:
 6. `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`
 7. `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`
 8. `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`
-9. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-10. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-11. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
-12. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
-13. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
+9. `docs/V8_COMPOSITE_SCORE_EXPANDED_BACKTEST_2026-07-13.md`
+10. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+11. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+12. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
+13. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
+14. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
 
 ## Mainline Behavior
 

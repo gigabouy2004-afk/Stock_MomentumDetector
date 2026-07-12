@@ -20,6 +20,8 @@ V1-V7 value audit, 2026-07-13: the exact historical formulas, periods, threshold
 
 V1-V3 baseline replay, 2026-07-13: the exact V1-V3 values are now configurable and frozen as research candidates in `config/V8_V1_V3_Indicator_Baseline_Config.json`. A 20-stock/four-date/three-profile replay produced 240 rows and passed an independent recalculation. V1 and V2 were identical. Their score-qualified subset did not outperform Foundation alone at D+5 or D+8; V3 improved the small D+8 subset but weakened the primary D+1 rate. No historical score, band or total has operational approval. Full report: `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`.
 
+Expanded composite-Score replay, 2026-07-13: the controlling interpretation is that momentum selection comes from the combined health-signal Score, not from independent indicator selectors. With unchanged V1-V3 values, 100 stocks across technology and industrials and 12 dates produced 3,600 independently validated rows. V1/V2 Score >=20 improved the fully scored cohort from 55.82% to 60.92% positive at D+1, 57.19% to 68.97% at D+5 and 53.42% to 64.37% at D+8. Technology was materially stronger than industrials. V3's Aroon/opening additions diluted selection, and raw Score was weak as a continuous rank. Report: `docs/V8_COMPOSITE_SCORE_EXPANDED_BACKTEST_2026-07-13.md`.
+
 Companion standard: `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md` defines what is carried forward, rejected, research-only, and required to pass backtesting before entering an operational decision path.
 
 ## 1. Mission
@@ -204,7 +206,7 @@ Until such testing passes, benchmark comparisons are information-only.
 
 ## 7. Score Policy
 
-An opaque single Score is not an acceptable decision explanation.
+The final technical-health judgment is expected to be a composite Score derived from the combined interpretation of approved indicators. An opaque single Score without its components is not an acceptable decision explanation.
 
 If a composite score is retained, output must separately expose:
 
