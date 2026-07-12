@@ -1,8 +1,8 @@
-# V8 Foundation Validation Handover
+# V8 Development Handover
 
 Date: 2026-07-12
 
-Status: Mainline V8 now enforces EMA200 plus configurable MACD `8/21/5` before Setup/Momentum. Focused 20-stock/four-date validation passed. V7 remains the operational baseline until broader validation and explicit signoff.
+Status: the rebuilt research engine now implements EMA200 plus MACD `12/26/9` Foundation, DMI eligibility and the V1 composite Health Score out of 30, with research qualification at 20. The integrated 1,200-row parity replay passed. `Momentum_Detector_V8.py` remains the legacy comparator, and V7 remains operational until broader validation and explicit signoff.
 
 Plain-language analysis update, 2026-07-13: `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md` is now the required first-read document. It defines MACD Reset and post-Foundation scoring, separates three MACD non-confirmation states, documents the freshness-score sign defect, and lists all matters requiring user approval.
 
@@ -10,13 +10,13 @@ Charter reset, 2026-07-13: active design authority has moved to `docs/V8_REVISED
 
 Rebuild workflow approval, 2026-07-13: begin with a basic V8 engine, add one indicator at a time, fully test its formula/values/scores/gates, and integrate only after explicit user approval. Checkpoint: `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`.
 
-Basic Foundation implementation, 2026-07-13: `Momentum_Detector_V8_Basic.py` now provides the standalone EMA/MACD eligibility path with no Score or post-Foundation indicators. Frozen 80-row replay and independent validation passed. Report: `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`.
+Historical Basic Foundation checkpoint, 2026-07-13: `Momentum_Detector_V8_Basic.py` initially provided a standalone EMA/MACD eligibility path with no Score or post-Foundation indicators. Its frozen 80-row replay remains audit evidence; current behavior is defined by the later Health Score implementation report.
 
-Calculation-only indicator update, corrected 2026-07-13: RSI, ADX/+DI/-DI, True Range/ATR/ATR%, OBV/OBV EMA and Aroon calculations are available only after `Foundation_Eligible = True`, with no score or gate authority. The canonical replay executed them on 25 eligible rows, skipped all 55 ineligible rows, and preserved Foundation results on 80/80 rows. Report: `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`.
+Historical calculation-only checkpoint, corrected 2026-07-13: RSI, ADX/+DI/-DI, True Range/ATR/ATR%, OBV/OBV EMA and Aroon were first added without decision authority. That checkpoint remains audit evidence. DMI and the V1 RSI/ADX/OBV components now have explicitly approved research authority.
 
-RSI base-layer update, 2026-07-13: RSI(14) now has configurable inclusive limits 30-65, actual-value messages and continuation authority after Foundation eligibility. The 10-symbol sample allowed AMAT and LRCX and stopped eight symbols above 65. This is functional validation, not final performance approval. Report: `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`.
+Historical RSI placeholder checkpoint, 2026-07-13: the inclusive 30-65 range proved configurable cutoff mechanics only. It is superseded in the active engine by the approved V1 tiered RSI Score values.
 
-Placeholder clarification, 2026-07-13: RSI 30/65 exists only to prove that configured lower/upper cutoffs execute correctly. It is not a recommended or operationally approved range. All future indicator defaults, periods and limits must be named configuration variables with explicit placeholder/research/approved metadata.
+Placeholder clarification, 2026-07-13: RSI 30/65 remains historical functional-test evidence and is not active. All current Health Score periods, limits and points are named configuration variables with explicit user-approved-research, non-operational metadata.
 
 V1-V7 indicator audit, 2026-07-13: source-code values and version changes for EMA/MACD/RSI/ADX/DMI/ATR/OBV/Aroon and the V4-V7 replacement framework are consolidated in `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`. Missing V7 indicators are traced back to their last source implementation rather than inferred.
 
@@ -24,28 +24,31 @@ V1-V3 research baseline, 2026-07-13: the exact V1-V3 indicator values are consol
 
 Expanded composite-Score result, 2026-07-13: momentum selection is now explicitly evaluated as the culmination of the configured health signals. The unchanged V1-V3 configurations were replayed on 50 technology and 50 industrial stocks across 12 dates. The 3,600-row run passed independent validation. V1/V2 Score >=20 improved D+1/D+5/D+8 positive rates over the Foundation+DMI cohort, with the strongest separation in technology. V3 added 75 weaker signals, and higher raw Score was not monotonically better. Report: `docs/V8_COMPOSITE_SCORE_EXPANDED_BACKTEST_2026-07-13.md`.
 
+Health Score implementation approval, 2026-07-13: the rebuilt Basic engine now executes EMA200+MACD12/26/9 Foundation, DMI14 eligibility, then the V1 RSI14+ADX14+OBV/EMA20 composite Raw Health Score out of 30. Score >=20 produces research qualification. The integrated 1,200-row replay achieved exact parity with the independently validated V1 evidence. Aroon/opening, ETF and inherited V4-V7 score logic are not included. Report: `docs/V8_BASIC_HEALTH_SCORE_IMPLEMENTATION_2026-07-13.md`.
+
 ## Start Here
 
 Read in this order:
 
 1. `docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md`
 2. `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`
-3. `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`
-4. `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`
-5. `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`
-6. `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`
-7. `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`
-8. `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`
-9. `docs/V8_COMPOSITE_SCORE_EXPANDED_BACKTEST_2026-07-13.md`
-10. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-11. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-12. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
-13. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
-14. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
+3. `docs/V8_BASIC_HEALTH_SCORE_IMPLEMENTATION_2026-07-13.md`
+4. `docs/V8_COMPOSITE_SCORE_EXPANDED_BACKTEST_2026-07-13.md`
+5. `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`
+6. `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`
+7. `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`
+8. `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md` for historical checkpoint behavior
+9. `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md` for historical checkpoint behavior
+10. `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md` for historical placeholder behavior
+11. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+12. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+13. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for legacy comparator behavior only
+14. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
+15. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
 
-## Mainline Behavior
+## Legacy Comparator Behavior
 
-Entry point:
+Legacy entry point:
 
 ```text
 Momentum_Detector_V8.py

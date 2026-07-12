@@ -8,19 +8,21 @@ Status: V8 is a development engine. V7 remains the operational engine. The prese
 
 User workflow confirmation, 2026-07-13: rebuild V8 from a basic engine, introduce indicators individually, fully functionally test and backtest every proposed value/score/gate, and integrate an indicator into main V8 only after explicit approval. Detailed checkpoint: `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`.
 
-Implementation update, 2026-07-13: the standalone Foundation-only engine is implemented in `Momentum_Detector_V8_Basic.py` and validated in `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`. It contains no post-Foundation Score or indicator authority and does not replace the legacy comparator or V7.
+Historical implementation checkpoint, 2026-07-13: the standalone Foundation-only form of `Momentum_Detector_V8_Basic.py` is validated in `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`. It has since advanced to the user-approved research Health Score sequence documented below and still does not replace V7 operationally.
 
 Calculation-layer update, 2026-07-13: raw RSI, ADX/DMI, True Range/ATR, OBV and Aroon calculations were added with explicit `CALCULATION_ONLY` authority and a hard `Foundation_Eligible = True` entry prerequisite. The corrected 80-row replay executed the indicator module for all 25 eligible rows, skipped all 55 ineligible rows, and preserved Foundation results on 80/80 rows. Report: `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`.
 
-RSI base-layer update, 2026-07-13: RSI(14) is the first indicator with a configurable continuation rule. The inclusive 30-65 limits, actual-value messages and continuation Boolean passed functional and independent replay validation. This authorizes the base-layer mechanics only; whether the range improves D+1/D+5/D+8 performance remains subject to isolated RSI backtesting. Report: `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`.
+Historical RSI base-layer checkpoint, 2026-07-13: the inclusive 30-65 placeholder proved configurable continuation mechanics. It is superseded in the active engine by the user-approved research V1 RSI scoring tiers.
 
-Placeholder clarification, 2026-07-13: RSI 30 and 65 are functional-test placeholders, not accepted trading defaults. Every future indicator period/value/range must live in configuration variables and publish a lifecycle status: placeholder, research candidate or explicitly user-approved operational value. Generic professional-practice claims provide no authority.
+Placeholder clarification, 2026-07-13: RSI 30 and 65 are historical functional-test placeholders, not active defaults. Every indicator period/value/range remains configuration-driven with an explicit lifecycle status. Generic professional-practice claims provide no authority.
 
 V1-V7 value audit, 2026-07-13: the exact historical formulas, periods, thresholds, score effects and removal points are recorded in `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`. The audit confirms that RSI and MACD disappeared in V4, ADX/DMI and OBV disappeared in V5, ATR changed formula in V5, and V7 retained the replacement trend/RS/breakout/accumulation/weekly framework.
 
 V1-V3 baseline replay, 2026-07-13: the exact V1-V3 values are now configurable and frozen as research candidates in `config/V8_V1_V3_Indicator_Baseline_Config.json`. A 20-stock/four-date/three-profile replay produced 240 rows and passed an independent recalculation. V1 and V2 were identical. Their score-qualified subset did not outperform Foundation alone at D+5 or D+8; V3 improved the small D+8 subset but weakened the primary D+1 rate. No historical score, band or total has operational approval. Full report: `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`.
 
 Expanded composite-Score replay, 2026-07-13: the controlling interpretation is that momentum selection comes from the combined health-signal Score, not from independent indicator selectors. With unchanged V1-V3 values, 100 stocks across technology and industrials and 12 dates produced 3,600 independently validated rows. V1/V2 Score >=20 improved the fully scored cohort from 55.82% to 60.92% positive at D+1, 57.19% to 68.97% at D+5 and 53.42% to 64.37% at D+8. Technology was materially stronger than industrials. V3's Aroon/opening additions diluted selection, and raw Score was weak as a continuous rank. Report: `docs/V8_COMPOSITE_SCORE_EXPANDED_BACKTEST_2026-07-13.md`.
+
+User-approved Health Score integration, 2026-07-13: the rebuilt `Momentum_Detector_V8_Basic.py` now implements the tested sequence EMA200+MACD12/26/9 Foundation -> DMI14 eligibility -> combined RSI14/ADX14/OBV-EMA20 points -> Raw Health Score out of 30 -> research qualification at 20. A 1,200-row integrated replay matched the independently validated V1 reference without any formula, point, total, qualification or outcome difference. Aroon, opening structure, ETF and the inherited V4-V7 score are excluded. This is approved research authority, not operational promotion. Report: `docs/V8_BASIC_HEALTH_SCORE_IMPLEMENTATION_2026-07-13.md`.
 
 Companion standard: `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md` defines what is carried forward, rejected, research-only, and required to pass backtesting before entering an operational decision path.
 
@@ -119,7 +121,7 @@ Close > EMA200
 AND configured MACD state
 ```
 
-The current development baseline uses bullish-positive MACD `8/21/5`:
+The integrated V1 Health Score research baseline uses bullish-positive MACD `12/26/9`, matching the configuration used to validate the combined Score. MACD `8/21/5` remains a configurable alternative requiring its own integrated Score replay:
 
 ```text
 MACD Line > Signal Line
@@ -487,9 +489,11 @@ At the effective date:
 V7 operational status: unchanged
 V8 operational approval: not granted
 Foundation concept: carried forward for continued evidence
-8/21/5: current development baseline, not proven universal optimum
-Current post-Foundation scoring/vetoes: comparator only, not approved design
+12/26/9 + DMI + V1 Health Score: user-approved research baseline, not operational
+8/21/5: configurable MACD research alternative without equivalent combined-Score approval
+V1 RSI/ADX/OBV raw Health Score >=20: approved research qualification
+Inherited V4-V7 scoring/vetoes: comparator only, not approved design
 Universal SPY veto: rejected
 ETF scoring: prohibited
-Next mainstream code change: blocked until charter/design-standard approval and declared functional tests
+Next operational promotion: blocked pending date-stability work, untouched holdout evidence and explicit approval
 ```

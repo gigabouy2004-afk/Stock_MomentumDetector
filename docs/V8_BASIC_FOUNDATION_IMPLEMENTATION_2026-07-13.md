@@ -2,7 +2,7 @@
 
 Date: 2026-07-13
 
-Status: historical Foundation-only schema and frozen baseline remain valid. The active basic engine subsequently added a strictly post-Foundation indicator module. RSI now has a configurable inclusive 30-65 continuation gate; ADX/DMI, True Range/ATR, OBV and Aroon remain calculation-only. See `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`. No score or trade-status rule was added.
+Status: historical Foundation-only schema and frozen baseline remain valid as audit evidence. The active Basic engine has now advanced to Foundation -> DMI -> V1 composite Health Score under explicit user research approval. See `docs/V8_BASIC_HEALTH_SCORE_IMPLEMENTATION_2026-07-13.md`. Statements below describing a no-Score engine refer to the earlier checkpoint, not current behavior.
 
 ## 1. Delivered Scope
 
