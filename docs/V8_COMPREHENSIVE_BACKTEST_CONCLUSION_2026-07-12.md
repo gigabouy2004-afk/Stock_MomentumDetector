@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 
-Status: Technical execution and independent validation passed. The sample does not support V8 operational activation; V7 remains the operational baseline.
+Status: Historical 10-stock conclusion retained. A later 20-stock/four-date enforced-Foundation run passed with stronger D+1 evidence; see `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`. V7 remains the operational baseline pending joint review and broader validation.
 
 Subsequent user-defined directional test:
 
@@ -205,6 +205,16 @@ Final status:
 V7 = OPERATIONAL BASELINE
 V8 = DEVELOPMENT; TECHNICAL SAMPLE COMPLETE; BROAD BACKTEST/SIGNOFF NOT PASSED
 ```
+
+## Follow-On Foundation Result
+
+The original result in this document predates restoration of the EMA200 plus MACD first filter. The approved follow-on run used mainline Foundation enforcement with MACD `8/21/5`:
+
+```text
+backtests/V8_Foundation_Validation/runs/V8FOUND_20260712T182945Z_cf0c908
+```
+
+It produced 5 Active rows with positive direction `4/5` at D+1, `5/5` at D+5, and `4/5` at D+8. This supersedes the earlier technical sample for current V8 behavior, but it does not erase the earlier result or authorize operational replacement of V7.
 
 ## Delivered Evidence
 

@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: Beta track closed and dropped; ETF Phases 2A-2C are complete. Configurable MACD research is implemented. Fibonacci settings improved D+1 detection in the first study, but MACD does not yet change V8 Score or decisions. V8 remains non-operational.
+Status: EMA200 plus configurable `8/21/5` MACD is now the enforced V8 Foundation stage. The 20-stock/four-date Q2 foundation, regression, directional, and ETF validation passed independently. V8 remains development-only pending joint result review and broader multi-regime signoff.
 
 ## Version Boundary
 
@@ -235,7 +235,7 @@ The replacement case shows that V8 can identify strong PANW momentum, but only a
 
 ## Configurable MACD Research
 
-V8 previously had no MACD implementation. V1-V3 used standard `12/26/9`; V8 now exposes configurable MACD periods while keeping `12/26/9` as the default.
+V8 previously had no MACD implementation. V1-V3 used standard `12/26/9`; the initial V8 audit implementation also defaulted to `12/26/9`. The enforced Foundation now defaults to configurable `8/21/5`.
 
 ```text
 --macd-fast
@@ -255,7 +255,7 @@ MACD_Histogram
 MACD_Bullish_Positive
 ```
 
-MACD remains informational and research-only. It does not affect Score, component scores, decisions, ranking, or ETF triggering.
+Historical note: during the first comparison MACD was informational and research-only. It was subsequently promoted to the enforced Foundation stage by explicit user approval. MACD still adds no score points and ETF triggering remains Active-only, but the Foundation result now controls downstream eligibility.
 
 Canonical evidence:
 
@@ -267,9 +267,39 @@ docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md
 
 The corrected foundation study requires both `Close > EMA200` and bullish-positive MACD. The proposed `8/21/5` setting improved D+1 pass rate from `52.63%` under standard `12/26/9` to `62.96%`, across 27 versus 19 episodes. It did not dominate D+5/D+8 persistence.
 
-The first study identifies `8/21/5` and `8/21/8` as holdout candidates. No production setting is approved until multi-regime and untouched-holdout testing is complete.
+The first study identified `8/21/5` and `8/21/8` as holdout candidates. `8/21/5` is approved for the V8 development line; multi-regime and untouched-holdout testing remain prerequisites for operational signoff.
 
 Lineage discovery confirms that EMA200 was never removed. MACD was removed in the V3-to-V4 long-term-engine rewrite without a separately versioned rationale. The intended Foundation -> Setup -> Momentum architecture is now recorded for review.
+
+## Foundation Promotion and 20-Stock Validation
+
+On 2026-07-12 the user approved restoring the V1-V3 foundation architecture in mainline V8. The production default is now:
+
+```text
+Close > EMA200
+AND MACD_Line(8,21,5) > MACD_Signal_Line(8,21,5)
+AND MACD_Line(8,21,5) > 0
+```
+
+The MACD periods remain configurable. `--foundation-policy enforce` is the production default; `audit` exists for controlled regression comparison.
+
+The foundation executes before benchmark, Setup/Momentum scoring, intraday, external-message, and ETF work. Non-qualified states stop with score `0`:
+
+```text
+FOUNDATION_TREND_VALID_MACD_RESET -> MOMENTUM_PRESENT_WAIT_CONFIRMATION
+FOUNDATION_INVALID_BELOW_EMA200   -> REJECT
+FOUNDATION_INSUFFICIENT_DATA      -> REJECT
+```
+
+Canonical evidence:
+
+```text
+backtests/V8_Foundation_Validation/runs/V8FOUND_20260712T182945Z_cf0c908
+docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md
+docs/V8_FINAL_HANDOVER_2026-07-12.md
+```
+
+Across 20 technology stocks and four predeclared Q2 dates, the run produced 80 rows: 25 Foundation Valid, 28 MACD Reset, and 27 Below EMA200. Five rows were Active. Active direction was `4/5` at D+1, `5/5` at D+5, and `4/5` at D+8. All independent implementation, outcome, regression, ETF-quarter, score-invariance, and checksum checks passed.
 
 ## Operational Signoff Gates
 
@@ -282,7 +312,7 @@ V8 may replace V7 only after:
 - US whitelist, leverage exclusions, ordering, caching, timeout, and failure tests pass.
 - `Score` invariance passes.
 - ETF message wording is reviewed and approved by the user.
-- The comprehensive V8 backtest and independent offline validation are complete.
+- The 20-stock/four-date foundation backtest and independent offline validation are complete.
 - Chronological validation, final-test, ticker-holdout, matched WAIT, V7 comparison, and robustness evidence are reviewed.
 - Historical ETF claims use point-in-time evidence, or the prospective-only limitation is explicitly accepted.
 - The comprehensive conclusion records the primary endpoint's evidence classification.

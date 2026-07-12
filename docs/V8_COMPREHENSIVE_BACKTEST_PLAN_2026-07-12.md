@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 
-Status: The requested 10-stock Q2 same-quarter technical run completed on 2026-07-12. It passed integrity validation but produced insufficient and unfavorable Active-signal evidence; broader execution and operational signoff remain pending.
+Status: The original 10-stock Q2 run and the subsequent enforced-Foundation 20-stock/four-date Q2 run are complete. Both passed integrity validation. The later run improved D+1 Active evidence but remains a single-quarter technology sample; multi-regime execution and operational signoff remain pending.
 
 Executed technical sample:
 
@@ -43,7 +43,19 @@ Conclusion: docs/V8_MACD_RESEARCH_CONCLUSION_2026-07-12.md
 Lineage: docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md
 ```
 
-The first comparison tested standard `12/26/9` and four Fibonacci variants. `8/21/5` improved D+1 detection but did not dominate longer persistence. MACD remains outside production scoring until multi-regime and holdout validation.
+The first comparison tested standard `12/26/9` and four Fibonacci variants. `8/21/5` improved D+1 detection but did not dominate longer persistence. Following explicit user approval, `8/21/5` is now the enforced development-line Foundation default. It adds no score points; multi-regime and holdout validation remain required for operational signoff.
+
+## 20-Stock Foundation Execution Update
+
+The approved follow-on execution is frozen at:
+
+```text
+backtests/V8_Foundation_Validation/runs/V8FOUND_20260712T182945Z_cf0c908
+```
+
+It covers 20 technology stocks, four predeclared dates (`2026-04-08`, `2026-04-30`, `2026-05-07`, `2026-06-09`), MACD `8/21/5`, D+1/D+5/D+8 outcomes, audit-versus-enforce regression, and strict same-quarter acceptance of independently dated ETF holdings. The independent validator recomputed all 80 rows and passed checksums.
+
+This execution satisfies a focused implementation and directional validation phase. It does not satisfy the plan's multi-regime, final-test, ticker-holdout, delisted-universe, or prospective ETF requirements.
 
 ## Objective
 
@@ -680,7 +692,7 @@ The next expansion session should begin by reading:
 docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md
 docs/V8_DEVELOPMENT_CHARTER_2026-07-10.md
 docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md
-docs/V8_BASELINE_HANDOVER_2026-07-10.md
+docs/V8_FINAL_HANDOVER_2026-07-12.md
 docs/V8_ETF_PHASE2_CONCLUSION_2026-07-11.md
 ```
 

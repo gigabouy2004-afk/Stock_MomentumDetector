@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 
-Status: Discovery complete. EMA200 was retained; MACD was removed during the V3-to-V4 long-term-engine rewrite. No contemporaneous document or commit message explains the removal.
+Status: Discovery complete and recommendation implemented. EMA200 was retained; MACD was removed during the V3-to-V4 long-term-engine rewrite without a recorded rationale. Mainline V8 now restores EMA200 plus configurable `8/21/5` MACD as the first filter.
 
 ## Question
 
@@ -247,3 +247,5 @@ FOUNDATION_INSUFFICIENT_DATA
 ```
 
 This preserves the user's foundational requirement while allowing the backtest to measure whether a temporary MACD reset should be a hard rejection or a wait state.
+
+Implementation decision: a MACD reset is a zero-score `MOMENTUM_PRESENT_WAIT_CONFIRMATION` state; below EMA200 and insufficient data are zero-score `REJECT` states. Only `FOUNDATION_VALID` proceeds to Setup/Momentum and ETF processing. The frozen 20-stock/four-date result and independent validation are recorded in `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`.

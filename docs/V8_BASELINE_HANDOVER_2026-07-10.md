@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: ETF Phase 2, directional tests, and the first configurable MACD comparison are complete. Faster Fibonacci MACD settings improved D+1 detection, but no MACD production rule is signed off. V8 remains development-only.
+Status: Superseded by `docs/V8_FINAL_HANDOVER_2026-07-12.md`. EMA200 plus configurable `8/21/5` MACD is now enforced as the V8 Foundation; the 20-stock/four-date validation passed. V8 remains development-only pending joint analysis and broader signoff.
 
 ## Baseline
 
@@ -164,15 +164,15 @@ MACD handover summary:
 
 - V8 previously had no MACD; V1-V3 used `12/26/9`.
 - V8 MACD is now configurable through CLI and stored in output audit fields.
-- Defaults remain `12/26/9`.
-- MACD does not change Score or Final Decision.
+- Defaults are now `8/21/5` following explicit user approval.
+- MACD does not add score points, but Foundation enforcement changes downstream eligibility and can change Final Decision.
 - Five predeclared settings produced 122 independent combined EMA200+MACD foundation episodes.
 - `8/21/5`: D+1 `62.96%`, D+5 `62.96%`, D+8 `62.96%`.
 - `12/26/9`: D+1 `52.63%`, D+5 `73.68%`, D+8 `73.68%`.
 - `8/21/8` provided the strongest balanced fast-setting profile.
 - Independent validator recomputed 1,586 metrics with zero failures.
 - Discovery: EMA200 remained present; MACD was removed in V4's long-term rewrite with no documented evidence-based justification.
-- Next gate: frozen multi-regime and untouched-holdout comparison before MACD affects production.
+- The first 20-stock/four-date enforced run passed; the next evidence gate is multi-regime and untouched-holdout comparison.
 
 Until signoff:
 

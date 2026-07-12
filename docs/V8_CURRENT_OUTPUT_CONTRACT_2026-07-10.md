@@ -4,7 +4,7 @@ Original date: 2026-07-10
 
 Updated: 2026-07-12
 
-Status: ETF-only V8 development contract with informational configurable MACD audit fields. MACD research is not permitted to change Score or decisions. V8 remains non-operational.
+Status: V8 development contract with an enforced EMA200 plus configurable MACD Foundation stage. Production defaults are MACD `8/21/5` and `--foundation-policy enforce`. ETF context remains informational and V8 remains non-operational pending signoff.
 
 ## Defaults and Active Trigger
 
@@ -169,12 +169,12 @@ docs/V8_ALT_CODES_DIRECTIONAL_CONCLUSION_2026-07-12.md
 
 PANW replaced XOM without changing this output contract. The alternate run identified a possible confirmation-lag issue but made no scoring or gate change.
 
-## Configurable MACD Audit Contract
+## Enforced Foundation Contract
 
 Default periods:
 
 ```text
-12/26/9
+8/21/5
 ```
 
 Configurable CLI fields:
@@ -195,15 +195,32 @@ MACD_Line
 MACD_Signal_Line
 MACD_Histogram
 MACD_Bullish_Positive
+Foundation_Status
+Foundation_Qualified
+Foundation_Reason
+Foundation_Policy
 ```
 
-These fields are informational. Changing the periods cannot change `Score`, `Final_Decision`, component scores, ranking, or ETF eligibility unless a later versioned policy is explicitly approved.
+The first-stage qualification rule is:
+
+```text
+Close > EMA200
+AND MACD_Line > MACD_Signal_Line
+AND MACD_Line > 0
+```
+
+Only `FOUNDATION_VALID` proceeds to benchmark, Setup/Momentum scoring, intraday confirmation, external messages, and ETF context. A price-above-EMA200 MACD reset publishes `MOMENTUM_PRESENT_WAIT_CONFIRMATION` with Score `0`; below EMA200 or insufficient data publishes `REJECT` with Score `0`.
+
+Changing the configurable periods can therefore change `Foundation_Status` and downstream eligibility. It does not directly add score points. `--foundation-policy audit` is reserved for regression analysis and calculates legacy downstream decisions without enforcing the first-stage stop.
 
 Research evidence:
 
 ```text
 docs/V8_MACD_RESEARCH_CONCLUSION_2026-07-12.md
 docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md
+docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md
 ```
 
-The lineage review confirms that V1-V3 required EMA200 and MACD before Phase-2 scoring, while V4 removed MACD during the long-term-engine rewrite. A restored production `Foundation_Status` is proposed for review but is not part of the current output contract.
+The lineage review confirms that V1-V3 required EMA200 and MACD before Phase-2 scoring, while V4 removed MACD during the long-term-engine rewrite. The restored `Foundation_Status` is now part of the mainline V8 contract. Evidence is recorded in `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`.
+
+If an existing append-only execution log has the pre-foundation header, V8 preserves it and opens a timestamped log with the current schema.

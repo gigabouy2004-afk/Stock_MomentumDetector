@@ -1,7 +1,4 @@
 import unittest
-import csv
-import tempfile
-from pathlib import Path
 
 import pandas as pd
 
@@ -121,16 +118,6 @@ class V8MACDTests(unittest.TestCase):
         self.assertEqual(output["Final_Decision"], "MOMENTUM_PRESENT_WAIT_CONFIRMATION")
         self.assertEqual(output["Score"], 0)
         self.assertIn("skipped", output["Score_Message"])
-
-    def test_old_execution_log_schema_is_preserved_and_rotated(self):
-        with tempfile.TemporaryDirectory() as folder:
-            path = Path(folder) / "execution.csv"
-            path.write_text("Run_ID,Ticker\nOLD,TEST\n", encoding="utf-8")
-            selected = Path(engine.initialize_execution_log(path))
-            self.assertNotEqual(selected, path)
-            self.assertEqual(path.read_text(encoding="utf-8"), "Run_ID,Ticker\nOLD,TEST\n")
-            with selected.open("r", encoding="utf-8", newline="") as file:
-                self.assertEqual(next(csv.reader(file)), engine.EXECUTION_LOG_FIELDS)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 
-Status: Configurable MACD implementation and first comparative backtest complete. No MACD setting has been approved to change V8 Score or Final Decision.
+Status: Historical research conclusion retained. After this comparison, the user explicitly approved `8/21/5` as the configurable V8 Foundation default. Enforcement and follow-on validation are documented in `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`.
 
 ## Baseline Finding
 
@@ -159,14 +159,14 @@ Current evidence suggests two candidates for the next frozen study:
 
 `5/13/5` remains an exploratory upper-speed bound because its higher event frequency may increase false positives. `13/34/8` remains the slower persistence comparator.
 
-No MACD rule should influence production V8 until the variants are frozen and tested across multiple chronological market regimes and an untouched holdout.
+This recommendation was superseded for the V8 development line by explicit user approval to restore the first filter immediately. The multi-regime and untouched-holdout work remains required before operational signoff.
 
 Final status:
 
 ```text
 V7 = OPERATIONAL BASELINE
 V8 = DEVELOPMENT
-MACD = CONFIGURABLE AND RESEARCH-VALIDATED; NOT YET A PRODUCTION SCORE/GATE
+MACD = CONFIGURABLE; 8/21/5 ENFORCED AS A FOUNDATION GATE IN THE V8 DEVELOPMENT LINE
 ```
 
 ## Delivered Evidence

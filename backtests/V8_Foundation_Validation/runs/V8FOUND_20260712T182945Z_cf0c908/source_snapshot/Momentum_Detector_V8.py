@@ -212,9 +212,10 @@ def initialize_execution_log(output_path=EXECUTION_LOG_CSV):
         with open(output_path, "r", encoding="utf-8", newline="") as file:
             existing_header = next(csv.reader(file), [])
         if existing_header != EXECUTION_LOG_FIELDS:
-            output_path = timestamped_output_path(output_path)
-        else:
-            return output_path
+            raise ValueError(
+                f"Execution log header does not match the current V8 schema: {output_path}"
+            )
+        return output_path
 
     with open(output_path, "a", encoding="utf-8", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=EXECUTION_LOG_FIELDS)
@@ -1294,27 +1295,13 @@ def run_scan(args, tickers, force_unique_output=False):
         try:
             df = fetch_daily_data(ticker, LOOKBACK_WINDOW)
             if df.empty:
-                output = build_foundation_status_row(
-                    ticker,
-                    {
-                        "Foundation_Status": FOUNDATION_INSUFFICIENT_DATA,
-                        "Foundation_Qualified": False,
-                        "Foundation_Reason": "no market data - check symbol",
-                    },
-                    args.foundation_policy,
-                )
+                output = build_status_row(ticker, "Avoid", "No market data", "no market data - check symbol")
             elif len(df) < MIN_HISTORY_BARS:
-                output = build_foundation_status_row(
+                output = build_status_row(
                     ticker,
-                    {
-                        "Foundation_Status": FOUNDATION_INSUFFICIENT_DATA,
-                        "Foundation_Qualified": False,
-                        "Foundation_Reason": (
-                            f"insufficient price history ({len(df)} bars; "
-                            f"{MIN_HISTORY_BARS} required)"
-                        ),
-                    },
-                    args.foundation_policy,
+                    "Avoid",
+                    "Insufficient history",
+                    f"insufficient price history ({len(df)} bars; {MIN_HISTORY_BARS} required)",
                 )
             else:
                 quote = fetch_live_quote(ticker)
@@ -1347,16 +1334,6 @@ def run_scan(args, tickers, force_unique_output=False):
                             "Avoid",
                             "No benchmark data",
                             f"no benchmark data - check {benchmark_ticker}",
-                        )
-                        output.update(
-                            {
-                                "Foundation_Status": foundation_row["Foundation_Status"],
-                                "Foundation_Qualified": bool(
-                                    foundation_row["Foundation_Qualified"]
-                                ),
-                                "Foundation_Reason": foundation_row["Foundation_Reason"],
-                                "Foundation_Policy": args.foundation_policy.upper(),
-                            }
                         )
                     else:
                         benchmark_df = apply_live_price_to_daily_data(benchmark_df, quote_cache[benchmark_ticker])
