@@ -8,6 +8,8 @@ Purpose: preserve what the experiments genuinely support, prevent failed assumpt
 
 Authority: this standard is subordinate only to explicit user instruction and the active revised charter. It is the fresh-session design and closure register.
 
+Workflow approval recorded 2026-07-13: the user approved a basic-engine rebuild followed by one-indicator-at-a-time functional testing, backtesting, result review and explicit approval before main V8 incorporation. See `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`. This approves the process, not any untested indicator or gate.
+
 ## 1. Core Design Doctrine
 
 The engine must answer four separate questions without mixing them:
@@ -635,14 +637,15 @@ At the start of a new session:
 1. Work only in `D:/Tools/Stock_MomentumDetector`, not the ETF Comparator folder.
 2. Read `docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md` completely.
 3. Read this document completely.
-4. Read `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md` for results and terminology.
-5. Read the frozen validation summary and aggregate summary.
-6. Check Git status and preserve unrelated user changes.
-7. Treat `Momentum_Detector_V8.py` as the current experimental comparator, not the approved future blueprint.
-8. Do not add or remove decision rules before checking the Closure Register.
-9. Ask only for unresolved approvals that materially change the next test.
-10. Freeze the test design before running outcomes.
-11. Commit only scoped changes and never rewrite frozen evidence.
+4. Read `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`.
+5. Read `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md` for results and terminology.
+6. Read the frozen validation summary and aggregate summary.
+7. Check Git status and preserve unrelated user changes.
+8. Treat `Momentum_Detector_V8.py` as the current experimental comparator, not the approved future blueprint.
+9. Do not add or remove decision rules before checking the Closure Register.
+10. Ask only for unresolved approvals that materially change the next test.
+11. Freeze the test design before running outcomes.
+12. Commit only scoped changes and never rewrite frozen evidence.
 
 Key commits:
 

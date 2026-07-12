@@ -8,17 +8,20 @@ Plain-language analysis update, 2026-07-13: `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2
 
 Charter reset, 2026-07-13: active design authority has moved to `docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md` and `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`. The current V8 code is a frozen experimental comparator; its inherited post-Foundation rules are not automatically approved.
 
+Rebuild workflow approval, 2026-07-13: begin with a basic V8 engine, add one indicator at a time, fully test its formula/values/scores/gates, and integrate only after explicit user approval. Checkpoint: `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`.
+
 ## Start Here
 
 Read in this order:
 
 1. `docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md`
 2. `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`
-3. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-4. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-5. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
-6. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
-7. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
+3. `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`
+4. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+5. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+6. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
+7. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
+8. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
 
 ## Mainline Behavior
 
