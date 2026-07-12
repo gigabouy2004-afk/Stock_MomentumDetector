@@ -6,6 +6,8 @@ Updated: 2026-07-12
 
 Status: V8 development contract with an enforced EMA200 plus configurable MACD Foundation stage. Production defaults are MACD `8/21/5` and `--foundation-policy enforce`. ETF context remains informational and V8 remains non-operational pending signoff.
 
+Known review item: `FOUNDATION_TREND_VALID_MACD_RESET` currently combines three distinct MACD states. The existing freshness score also uses a negative distance-from-high field with positive comparison thresholds. Neither terminology splitting nor the freshness correction is implemented yet; both require user approval as documented in `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`.
+
 ## Defaults and Active Trigger
 
 ```text

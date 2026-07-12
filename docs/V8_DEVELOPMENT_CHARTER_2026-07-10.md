@@ -6,6 +6,8 @@ Updated: 2026-07-12
 
 Status: EMA200 plus configurable `8/21/5` MACD is now the enforced V8 Foundation stage. The 20-stock/four-date Q2 foundation, regression, directional, and ETF validation passed independently. V8 remains development-only pending joint result review and broader multi-regime signoff.
 
+Analysis clarification dated 2026-07-13: the required first-read analysis is `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`. It replaces unexplained shorthand, decomposes the MACD Reset population, and records the unresolved freshness-score formula defect and approval items.
+
 ## Version Boundary
 
 Version 7 is closed and remains the operational engine. New work occurs only in V8 or V8-specific support files. `Momentum_Detector_V7.py` must not be edited by the V8 ETF track.

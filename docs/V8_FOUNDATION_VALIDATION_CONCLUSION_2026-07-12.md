@@ -4,6 +4,8 @@ Date: 2026-07-12
 
 Status: Mainline implementation and focused validation passed. EMA200 plus configurable MACD `8/21/5` is now the enforced V8 first filter. The evidence supports continued V8 development and joint analysis, not operational replacement of V7.
 
+Plain-language supplement: `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md` defines every engine term, decomposes the combined MACD Reset state, explains the full post-Foundation scoring path, records a freshness-score sign defect, and provides the user-approval checklist. Use that document for offline analysis or restart.
+
 ## Decision Implemented
 
 V8 restores the V1-V3 staged architecture:

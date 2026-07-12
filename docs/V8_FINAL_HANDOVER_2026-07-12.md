@@ -4,15 +4,18 @@ Date: 2026-07-12
 
 Status: Mainline V8 now enforces EMA200 plus configurable MACD `8/21/5` before Setup/Momentum. Focused 20-stock/four-date validation passed. V7 remains the operational baseline until broader validation and explicit signoff.
 
+Plain-language analysis update, 2026-07-13: `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md` is now the required first-read document. It defines MACD Reset and post-Foundation scoring, separates three MACD non-confirmation states, documents the freshness-score sign defect, and lists all matters requiring user approval.
+
 ## Start Here
 
 Read in this order:
 
-1. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-2. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md`
-3. `docs/V8_DEVELOPMENT_CHARTER_2026-07-10.md`
-4. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
-5. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
+1. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+2. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+3. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md`
+4. `docs/V8_DEVELOPMENT_CHARTER_2026-07-10.md`
+5. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
+6. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
 
 ## Mainline Behavior
 
@@ -105,6 +108,8 @@ Foundation Valid materially improved D+1 behavior: 76% positive with +2.21% mean
 The reset cohort remained strong at D+5/D+8. Five legacy Active rows were blocked by the new MACD rule; only 2/5 were positive at D+1, but 4/5 were positive at D+8. Preserve `FOUNDATION_TREND_VALID_MACD_RESET` as a WAIT state for the joint analysis rather than treating it as a failed trend.
 
 The full scorer remains restrictive after Foundation qualification: 18 Foundation Valid rows were still rejected. Those rows were positive 13/18 at D+1, 16/18 at D+5, and 14/18 at D+8. This suggests the next review should examine downstream Setup/Momentum thresholds independently from the restored Foundation rule.
+
+Detailed review found that all 25 analyzed rows received 12 freshness points because a negative distance-from-high field is compared with positive thresholds. A likely sign correction did not change a Final Decision in this sample, but the formula must be approved, corrected, tested, and replayed before downstream-score signoff.
 
 ## Reproduction
 
