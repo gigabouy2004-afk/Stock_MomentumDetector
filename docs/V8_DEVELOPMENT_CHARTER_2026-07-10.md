@@ -1,5 +1,7 @@
 # V8 Development Charter
 
+> **SUPERSEDED FOR ACTIVE DESIGN GOVERNANCE — 2026-07-13.** This document is retained as historical audit evidence. New V8 design, implementation, testing and approval must follow `docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md` and `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`. Nothing in this older chronological record should be interpreted as current approval for inherited post-Foundation scoring or veto rules.
+
 Original date: 2026-07-10
 
 Updated: 2026-07-12

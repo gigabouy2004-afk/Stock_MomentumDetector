@@ -6,16 +6,19 @@ Status: Mainline V8 now enforces EMA200 plus configurable MACD `8/21/5` before S
 
 Plain-language analysis update, 2026-07-13: `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md` is now the required first-read document. It defines MACD Reset and post-Foundation scoring, separates three MACD non-confirmation states, documents the freshness-score sign defect, and lists all matters requiring user approval.
 
+Charter reset, 2026-07-13: active design authority has moved to `docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md` and `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`. The current V8 code is a frozen experimental comparator; its inherited post-Foundation rules are not automatically approved.
+
 ## Start Here
 
 Read in this order:
 
-1. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-2. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-3. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md`
-4. `docs/V8_DEVELOPMENT_CHARTER_2026-07-10.md`
-5. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
-6. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
+1. `docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md`
+2. `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`
+3. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+4. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+5. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
+6. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
+7. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
 
 ## Mainline Behavior
 

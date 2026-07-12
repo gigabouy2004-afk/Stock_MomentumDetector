@@ -1,5 +1,7 @@
 # V8 Current Output Contract
 
+> **CURRENT-CODE DESCRIPTION, NOT FUTURE-DESIGN APPROVAL.** The controlling development documents are `docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md` and `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`. This file describes what the existing V8 comparator publishes; inherited post-Foundation score and veto behaviour remains subject to research and approval.
+
 Original date: 2026-07-10
 
 Updated: 2026-07-12
@@ -143,7 +145,7 @@ Comprehensive backtest specification:
 docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md
 ```
 
-The existing ETF validation proves sample mapping quality and production-path behavior. It does not establish broad historical momentum performance. Historical ETF outcome claims require point-in-time mapping and holdings evidence; otherwise the combined stock-and-ETF outcome study is prospective.
+The existing ETF validation proves sample mapping quality and production-path behavior. ETF mapping is not a momentum-performance feature and has no predictive or scoring mandate. Historical ETF rows, where retained, are audit context only and require appropriately dated holdings evidence.
 
 Completed 10-stock technical evidence:
 

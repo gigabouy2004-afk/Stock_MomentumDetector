@@ -1,5 +1,7 @@
 # V8 Comprehensive Momentum and ETF Backtesting Plan
 
+> **HISTORICAL TEST PLAN.** New V8 design and validation are governed by `docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md` and `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`. Any ETF return-comparison work in this older plan is not an active signal-design requirement; ETF mapping is informational and non-scoring.
+
 Date: 2026-07-12
 
 Status: The original 10-stock Q2 run and the subsequent enforced-Foundation 20-stock/four-date Q2 run are complete. Both passed integrity validation. The later run improved D+1 Active evidence but remains a single-quarter technology sample; multi-regime execution and operational signoff remain pending.

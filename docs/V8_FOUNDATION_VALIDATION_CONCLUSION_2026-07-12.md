@@ -134,7 +134,7 @@ GOOGL versus VOX:
 | 2026-04-30 | +1.06% / +4.29% / +1.50% | -0.06% / +0.65% / -1.16% |
 | 2026-05-07 | +0.96% / +1.03% / -2.35% | -0.10% / -0.14% / -1.61% |
 
-ETF evidence is complete for the requested mapping contract, but sparse for Active outcome comparison. No Q3 holding was back-cast into Q2.
+ETF evidence is complete for the requested mapping contract. The two Active outcome comparisons are retained as historical audit rows only; ETF return prediction is not part of the approved engine function. No Q3 holding was back-cast into Q2.
 
 ## Independent Validation
 
@@ -167,7 +167,7 @@ Limitations:
 - Purposeful seed selection does not estimate whole-market precision.
 - Historical daily replay cannot reconstruct hourly, live-quote, or extended-hours gates.
 - Only five Active rows were observed.
-- Same-quarter ETF holdings evidence was available for 7 mappings, with only 2 Active ETF outcome rows.
+- Same-quarter ETF holdings evidence was available for 7 mappings. Two Active ETF outcome rows were recorded, but they have no scoring or predictive mandate.
 - The run does not address delisted-symbol survivorship, transaction costs, or a final untouched ticker holdout.
 
 Decision:

@@ -491,7 +491,7 @@ Results:
 - therefore only two Active stock/ETF comparisons were available;
 - ETF processing changed no stock Score.
 
-The ETF implementation contract passed, but the Active ETF outcome sample is too small to judge predictive value.
+The ETF implementation contract passed. No predictive conclusion is required or authorized because ETF mapping is portfolio context, not momentum evidence. The two recorded stock/ETF outcome rows remain historical audit data only.
 
 ## 13. What the Experiment Proved
 
@@ -515,7 +515,7 @@ The experiment did not prove:
 4. that the downstream hard-rejection rules are calibrated correctly;
 5. that daily historical replay exactly reproduces live hourly and extended-hours behavior;
 6. that the results generalize beyond the selected technology cohort;
-7. that ETF membership predicts the stock’s return;
+7. any relationship between ETF membership and stock return; that question is outside the approved ETF function and was not tested as a signal hypothesis;
 8. that V8 is ready to replace V7 operationally;
 9. that transaction costs, stops, drawdowns, and position sizing would preserve the reported returns.
 
@@ -643,6 +643,8 @@ For the next analysis session, discuss in this order:
 Primary interpretation documents:
 
 ```text
+docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md
+docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md
 docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md
 docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md
 docs/V8_FINAL_HANDOVER_2026-07-12.md
@@ -683,7 +685,7 @@ Validated boundary at handover:
 Foundation implementation: complete
 Focused experiment: technically valid
 Downstream score: requires freshness correction and rule review
-ETF implementation: technically valid; predictive sample sparse
+ETF implementation: technically valid context; predictive/scoring role prohibited
 V8 operational approval: not granted
 V7 operational status: unchanged
 ```
