@@ -14,6 +14,8 @@ Basic Foundation implementation, 2026-07-13: `Momentum_Detector_V8_Basic.py` now
 
 Calculation-only indicator update, corrected 2026-07-13: RSI, ADX/+DI/-DI, True Range/ATR/ATR%, OBV/OBV EMA and Aroon calculations are available only after `Foundation_Eligible = True`, with no score or gate authority. The canonical replay executed them on 25 eligible rows, skipped all 55 ineligible rows, and preserved Foundation results on 80/80 rows. Report: `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`.
 
+RSI base-layer update, 2026-07-13: RSI(14) now has configurable inclusive limits 30-65, actual-value messages and continuation authority after Foundation eligibility. The 10-symbol sample allowed AMAT and LRCX and stopped eight symbols above 65. This is functional validation, not final performance approval. Report: `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`.
+
 ## Start Here
 
 Read in this order:
@@ -23,11 +25,12 @@ Read in this order:
 3. `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`
 4. `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`
 5. `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`
-6. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-7. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-8. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
-9. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
-10. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
+6. `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`
+7. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+8. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+9. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
+10. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
+11. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
 
 ## Mainline Behavior
 

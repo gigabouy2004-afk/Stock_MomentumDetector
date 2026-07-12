@@ -2,7 +2,7 @@
 
 Date: 2026-07-13
 
-Status: corrected Foundation-gated calculation architecture implemented and validated. The EMA200/MACD Foundation is evaluated first. Only Foundation-eligible stocks may enter this indicator module. No indicator in this layer has scoring, ranking, WAIT, rejection, Foundation, or trade-eligibility authority.
+Status: historical calculation-only milestone, retained for audit. The EMA200/MACD Foundation is evaluated first and only Foundation-eligible stocks enter the indicator module. A subsequent approved base-layer step gave RSI an inclusive configurable 30-65 continuation gate; see `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`. ADX, ATR, OBV and Aroon remain calculation-only.
 
 Architectural correction: schema `V8_BASIC_FOUNDATION_2` calculated the indicator set before Foundation classification. That execution order was incorrect even though the calculations had no decision authority. Schema `V8_BASIC_FOUNDATION_3` supersedes it and enforces the Foundation boundary in code, tests, output status and independent validation.
 

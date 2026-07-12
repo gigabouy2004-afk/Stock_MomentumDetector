@@ -6,3 +6,4 @@ backtests/V8_Directional_Persistence/runs/** -text
 backtests/V8_MACD_Research/runs/** -text
 backtests/V8_Foundation_Validation/runs/** -text
 backtests/V8_Basic_Foundation/runs/** -text
+backtests/V8_RSI_Base/** -text

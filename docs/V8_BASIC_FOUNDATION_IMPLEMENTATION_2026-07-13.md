@@ -2,7 +2,7 @@
 
 Date: 2026-07-13
 
-Status: historical Foundation-only schema and frozen baseline remain valid. The active basic engine subsequently added a strictly post-Foundation, calculation-only RSI, ADX/DMI, True Range/ATR, OBV and Aroon module. It executes only after EMA200/MACD Foundation eligibility is confirmed. See `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`. No score or indicator gate was added.
+Status: historical Foundation-only schema and frozen baseline remain valid. The active basic engine subsequently added a strictly post-Foundation indicator module. RSI now has a configurable inclusive 30-65 continuation gate; ADX/DMI, True Range/ATR, OBV and Aroon remain calculation-only. See `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`. No score or trade-status rule was added.
 
 ## 1. Delivered Scope
 

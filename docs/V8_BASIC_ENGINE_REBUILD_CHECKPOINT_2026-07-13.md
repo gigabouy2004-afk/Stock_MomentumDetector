@@ -4,6 +4,8 @@ Date: 2026-07-13
 
 Status: development workflow approved by the user. The basic Foundation-only engine and the strictly Foundation-gated, calculation-only V1-V3 indicator layer were implemented and independently validated on 2026-07-13. Reports: `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md` and `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`.
 
+RSI base-layer update, 2026-07-13: standard RSI(14) now uses configurable inclusive limits 30-65, actual-value messages and a continuation Boolean. It operates only after Foundation eligibility. Ten-symbol functional evidence and the 80-row independent replay are documented in `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`. This approves mechanics, not performance optimality.
+
 ## 1. User Direction Recorded
 
 V8 will restart from a basic engine. Indicators will then be introduced individually.
@@ -281,4 +283,18 @@ Indicator module skipped: 55/55 ineligible rows
 Ineligible rows with indicator values: 0
 Scores or gates added: none
 Next gate: choose one indicator for isolated value/rule backtesting
+```
+
+RSI base-layer functional update:
+
+```text
+RSI definition: standard RSI(14)
+Configured range: inclusive 30-65
+Authority: continuation gate after Foundation
+Ten-symbol sample: 2 within range, 8 above range
+Frozen eligible observations: 12 allowed, 13 stopped above 65
+Foundation-ineligible RSI evaluations: 0/55
+Foundation rows changed: 0/80
+Scores or trade statuses added: none
+Next gate: isolated RSI performance testing before operational approval
 ```
