@@ -20,6 +20,8 @@ Placeholder clarification, 2026-07-13: RSI 30/65 exists only to prove that confi
 
 V1-V7 indicator audit, 2026-07-13: source-code values and version changes for EMA/MACD/RSI/ADX/DMI/ATR/OBV/Aroon and the V4-V7 replacement framework are consolidated in `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`. Missing V7 indicators are traced back to their last source implementation rather than inferred.
 
+V1-V3 research baseline, 2026-07-13: the exact V1-V3 indicator values are consolidated in a configurable research-only evaluator and replayed across 20 technology stocks and four dates. All 240 rows passed independent recalculation. V1/V2 qualified 7 observations without improving longer-horizon results over Foundation alone; V3 qualified 11, weakened D+1 direction and showed a small-sample D+8 improvement. The values are frozen for isolated research, not approved for mainstream V8. Report: `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`.
+
 ## Start Here
 
 Read in this order:
@@ -31,11 +33,12 @@ Read in this order:
 5. `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md`
 6. `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`
 7. `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`
-8. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-9. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-10. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
-11. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
-12. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
+8. `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`
+9. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+10. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+11. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
+12. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
+13. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
 
 ## Mainline Behavior
 

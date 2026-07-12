@@ -18,6 +18,8 @@ Placeholder clarification, 2026-07-13: RSI 30 and 65 are functional-test placeho
 
 V1-V7 value audit, 2026-07-13: the exact historical formulas, periods, thresholds, score effects and removal points are recorded in `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`. The audit confirms that RSI and MACD disappeared in V4, ADX/DMI and OBV disappeared in V5, ATR changed formula in V5, and V7 retained the replacement trend/RS/breakout/accumulation/weekly framework.
 
+V1-V3 baseline replay, 2026-07-13: the exact V1-V3 values are now configurable and frozen as research candidates in `config/V8_V1_V3_Indicator_Baseline_Config.json`. A 20-stock/four-date/three-profile replay produced 240 rows and passed an independent recalculation. V1 and V2 were identical. Their score-qualified subset did not outperform Foundation alone at D+5 or D+8; V3 improved the small D+8 subset but weakened the primary D+1 rate. No historical score, band or total has operational approval. Full report: `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`.
+
 Companion standard: `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md` defines what is carried forward, rejected, research-only, and required to pass backtesting before entering an operational decision path.
 
 ## 1. Mission
