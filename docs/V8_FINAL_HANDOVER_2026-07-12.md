@@ -16,6 +16,8 @@ Calculation-only indicator update, corrected 2026-07-13: RSI, ADX/+DI/-DI, True 
 
 RSI base-layer update, 2026-07-13: RSI(14) now has configurable inclusive limits 30-65, actual-value messages and continuation authority after Foundation eligibility. The 10-symbol sample allowed AMAT and LRCX and stopped eight symbols above 65. This is functional validation, not final performance approval. Report: `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`.
 
+Placeholder clarification, 2026-07-13: RSI 30/65 exists only to prove that configured lower/upper cutoffs execute correctly. It is not a recommended or operationally approved range. All future indicator defaults, periods and limits must be named configuration variables with explicit placeholder/research/approved metadata.
+
 ## Start Here
 
 Read in this order:

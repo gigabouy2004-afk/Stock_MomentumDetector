@@ -14,6 +14,8 @@ Calculation-layer update, 2026-07-13: raw RSI, ADX/DMI, True Range/ATR, OBV and 
 
 RSI base-layer update, 2026-07-13: RSI(14) is the first indicator with a configurable continuation rule. The inclusive 30-65 limits, actual-value messages and continuation Boolean passed functional and independent replay validation. This authorizes the base-layer mechanics only; whether the range improves D+1/D+5/D+8 performance remains subject to isolated RSI backtesting. Report: `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`.
 
+Placeholder clarification, 2026-07-13: RSI 30 and 65 are functional-test placeholders, not accepted trading defaults. Every future indicator period/value/range must live in configuration variables and publish a lifecycle status: placeholder, research candidate or explicitly user-approved operational value. Generic professional-practice claims provide no authority.
+
 Companion standard: `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md` defines what is carried forward, rejected, research-only, and required to pass backtesting before entering an operational decision path.
 
 ## 1. Mission

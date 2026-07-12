@@ -42,6 +42,27 @@ Every proposed indicator or rule must declare:
 - promotion criteria;
 - rollback behaviour.
 
+Every numerical period, lower limit, upper limit, exact comparison value, crossover rule and tolerance must live in configuration variables. No such value may be embedded as an unexplained code literal.
+
+Every configured decision value must also declare:
+
+```text
+Rule_Type
+Limit_Status
+Operational_Use_Approved
+Requested authority
+```
+
+Allowed lifecycle states are:
+
+```text
+PLACEHOLDER_FUNCTIONAL_TEST_ONLY
+RESEARCH_CANDIDATE_NOT_OPERATIONAL
+USER_APPROVED_OPERATIONAL
+```
+
+A placeholder exists only to prove that configuration, boundaries, cutoffs and messages work. It is not a market recommendation or a claimed industry standard. `Operational_Use_Approved` must remain false until the user explicitly approves the value after the required research.
+
 If any item is missing, the feature remains information-only.
 
 ## 3. Authority Levels
@@ -109,6 +130,8 @@ Reason: auditability and later false-negative analysis.
 ### CARRY-07 — Configuration and evidence versioning
 
 Indicator periods, thresholds, benchmark selection, weights and authority must be stored with each run.
+
+Default values must be stored in named configuration variables, not buried in formulas. Output and frozen evidence must state whether each value is a placeholder, research candidate or explicitly approved operational value.
 
 ### CARRY-08 — Frozen evidence package
 
@@ -189,6 +212,10 @@ Reject means the engine did not authorize the setup. It does not assert that pri
 ### REJECT-14 — Mainstream modification before approval
 
 Research code and a successful sample do not authorize mainstream integration.
+
+### REJECT-15 — Arbitrary defaults presented as accepted practice
+
+No numerical value may be institutionalized because it is conventional, popular, described as professional practice, or previously suggested by the implementation agent. A value may be used as a clearly labelled functional placeholder, but it cannot be described as correct, recommended or operationally approved without the required evidence and explicit user approval.
 
 ## 6. Functional and Backtest Gate Register
 

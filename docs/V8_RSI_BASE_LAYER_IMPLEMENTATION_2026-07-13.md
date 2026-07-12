@@ -2,7 +2,7 @@
 
 Date: 2026-07-13
 
-Status: first configurable post-Foundation indicator rule implemented and functionally validated. This milestone approves the RSI calculation, configuration, boundaries, output values and messages as a base-layer contract. It does not yet establish that the 30-65 range improves trading performance.
+Status: first configurable post-Foundation indicator cutoff implemented and functionally validated. The values 30 and 65 are explicit placeholders used only to prove variable-driven boundaries, cutoff behavior and messages. They are not recommended RSI limits, professional-trading defaults or operationally approved values.
 
 ## 1. Required Execution Sequence
 
@@ -28,7 +28,9 @@ RSI period: 14
 Lower limit: 30
 Upper limit: 65
 Boundary mode: inclusive
-Authority: continuation gate
+Authority: CONFIGURABLE_CONTINUATION_GATE
+Limit status: PLACEHOLDER_FUNCTIONAL_TEST_ONLY
+Operational use approved: False
 ```
 
 Therefore:
@@ -56,6 +58,9 @@ The output exposes:
 RSI
 RSI_Period
 RSI_Authority
+RSI_Rule_Type
+RSI_Limit_Status
+RSI_Operational_Use_Approved
 RSI_Lower_Limit
 RSI_Upper_Limit
 RSI_Range_Status
@@ -76,7 +81,7 @@ Other messages follow the same pattern and always contain the actual RSI value a
 
 ## 4. Authority Boundary
 
-RSI currently has `CONTINUATION_GATE` authority. It determines only whether future post-RSI indicator rules may run.
+RSI currently has `CONFIGURABLE_CONTINUATION_GATE` behavior inside the development engine. Its `Limit_Status` is `PLACEHOLDER_FUNCTIONAL_TEST_ONLY` and `Operational_Use_Approved` is false. It proves that the configured cutoff can allow or stop future post-RSI indicator rules; it does not approve 30 or 65 as trading values.
 
 It does not currently:
 
@@ -90,7 +95,7 @@ ADX/DMI, True Range/ATR, OBV/OBV EMA and Aroon remain calculation-only. No limit
 
 ## 5. Functional Tests
 
-The focused basic-engine module contains 18 tests and the complete repository suite contains 40 tests.
+The focused basic-engine module contains 19 tests and the complete repository suite contains 41 tests.
 
 RSI-specific coverage includes:
 
@@ -104,6 +109,8 @@ RSI-specific coverage includes:
 - CLI/config overrides are embedded in the Configuration ID;
 - Foundation-ineligible stocks never calculate or evaluate RSI;
 - independently generated messages and Boolean results match engine output.
+- placeholder limits cannot claim operational approval;
+- every output row publishes placeholder/approval metadata.
 
 ## 6. Ten-Symbol Execution Sample
 
@@ -133,7 +140,7 @@ All ten were deliberately selected from the Foundation-eligible cohort on that d
 Captured evidence:
 
 ```text
-backtests/V8_RSI_Base/samples/V8RSI10_20260507
+backtests/V8_RSI_Base/samples/V8RSI10_20260507_PLACEHOLDER
 ```
 
 ## 7. Frozen 20-Stock/Four-Date Replay
@@ -141,7 +148,7 @@ backtests/V8_RSI_Base/samples/V8RSI10_20260507
 Canonical run:
 
 ```text
-backtests/V8_Basic_Foundation/runs/V8BASICFOUND_20260712T212606Z_f6e0fc4
+backtests/V8_Basic_Foundation/runs/V8BASICFOUND_20260712T213957Z_f16019c
 ```
 
 Result:
@@ -155,6 +162,8 @@ RSI not evaluated: 55/55 ineligible rows
 RSI within 30-65: 12
 RSI above 65: 13
 RSI below 30: 0
+RSI limit status: PLACEHOLDER_FUNCTIONAL_TEST_ONLY
+Operational use approved: False
 Foundation regression changes: 0/80
 Independent validation failures: 0
 Checksums: PASS
@@ -173,7 +182,7 @@ Preliminary cohort observation from this same replay:
 | Within 30-65; allowed | 12 | 7/12 | +0.44% | 11/12 | +6.63% | 9/12 | +9.67% |
 | Above 65; stopped | 13 | 12/13 | +3.85% | 12/13 | +9.57% | 9/13 | +10.77% |
 
-This is not a final backtest because the sample is small and was not reserved as a holdout. It is nevertheless a material warning: in this cohort, the proposed upper limit of 65 removed the group with the stronger D+1 hit rate and mean return. The RSI drill-down must therefore compare alternative upper limits and possibly an information-only interpretation before this continuation gate is approved for operational use.
+This is not a final backtest because the sample is small and was not reserved as a holdout. It is nevertheless a material warning about the placeholder's observed behavior: in this cohort, the test upper limit of 65 removed the group with the stronger D+1 hit rate and mean return. The RSI drill-down must independently research suitable interpretations and values before any RSI cutoff is proposed for operational use.
 
 No change to the 30-65 limits should be made from this small functional sample alone.
 

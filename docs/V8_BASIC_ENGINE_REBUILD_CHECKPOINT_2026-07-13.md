@@ -6,6 +6,8 @@ Status: development workflow approved by the user. The basic Foundation-only eng
 
 RSI base-layer update, 2026-07-13: standard RSI(14) now uses configurable inclusive limits 30-65, actual-value messages and a continuation Boolean. It operates only after Foundation eligibility. Ten-symbol functional evidence and the 80-row independent replay are documented in `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md`. This approves mechanics, not performance optimality.
 
+Placeholder clarification: 30 and 65 were deliberately supplied to exercise both sides of the configurable cutoff. They carry `PLACEHOLDER_FUNCTIONAL_TEST_ONLY` status and cannot claim operational approval. The same configuration/status contract is mandatory for every later indicator.
+
 ## 1. User Direction Recorded
 
 V8 will restart from a basic engine. Indicators will then be introduced individually.
@@ -290,7 +292,9 @@ RSI base-layer functional update:
 ```text
 RSI definition: standard RSI(14)
 Configured range: inclusive 30-65
-Authority: continuation gate after Foundation
+Authority: configurable functional-test continuation gate after Foundation
+Limit status: PLACEHOLDER_FUNCTIONAL_TEST_ONLY
+Operational use approved: False
 Ten-symbol sample: 2 within range, 8 above range
 Frozen eligible observations: 12 allowed, 13 stopped above 65
 Foundation-ineligible RSI evaluations: 0/55
