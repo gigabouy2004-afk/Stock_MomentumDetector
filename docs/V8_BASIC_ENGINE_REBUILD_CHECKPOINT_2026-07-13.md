@@ -2,7 +2,7 @@
 
 Date: 2026-07-13
 
-Status: development workflow approved by the user. This checkpoint records the repository state and the mandatory sequence for the next V8 implementation session.
+Status: development workflow approved by the user. The basic Foundation-only engine was implemented and independently validated on 2026-07-13. Implementation report: `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`.
 
 ## 1. User Direction Recorded
 
@@ -256,3 +256,14 @@ The next V8 session must begin by:
 6. validating the basic core before selecting the first research indicator.
 
 No indicator onboarding begins until the basic engine itself is reviewed.
+
+Implementation checkpoint:
+
+```text
+Basic engine: Momentum_Detector_V8_Basic.py
+Foundation-only frozen replay: V8BASICFOUND_20260712T204114Z_36c2e24
+Rows independently recomputed: 80/80
+Validation failures: 0
+Score/benchmark/ETF fields: absent
+Next gate: user review before selecting the first post-Foundation indicator
+```

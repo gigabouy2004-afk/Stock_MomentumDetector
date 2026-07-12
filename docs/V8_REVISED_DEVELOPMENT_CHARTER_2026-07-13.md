@@ -8,6 +8,8 @@ Status: V8 is a development engine. V7 remains the operational engine. The prese
 
 User workflow confirmation, 2026-07-13: rebuild V8 from a basic engine, introduce indicators individually, fully functionally test and backtest every proposed value/score/gate, and integrate an indicator into main V8 only after explicit approval. Detailed checkpoint: `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`.
 
+Implementation update, 2026-07-13: the standalone Foundation-only engine is implemented in `Momentum_Detector_V8_Basic.py` and validated in `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`. It contains no post-Foundation Score or indicator authority and does not replace the legacy comparator or V7.
+
 Companion standard: `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md` defines what is carried forward, rejected, research-only, and required to pass backtesting before entering an operational decision path.
 
 ## 1. Mission
@@ -452,10 +454,11 @@ Read in this order:
 1. `docs/V8_REVISED_DEVELOPMENT_CHARTER_2026-07-13.md`
 2. `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`
 3. `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`
-4. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-5. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-6. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
-7. the frozen run manifest and validation summary
+4. `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md`
+5. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+6. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+7. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for current-code behaviour only
+8. the frozen run manifest and validation summary
 
 Do not use the 2026-07-10 charter as current design authority.
 
