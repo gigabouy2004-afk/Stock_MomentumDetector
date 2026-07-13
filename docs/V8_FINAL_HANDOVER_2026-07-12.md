@@ -26,6 +26,8 @@ Expanded composite-Score result, 2026-07-13: momentum selection is now explicitl
 
 Health Score implementation approval, 2026-07-13: the rebuilt Basic engine now executes EMA200+MACD12/26/9 Foundation, DMI14 eligibility, then the V1 RSI14+ADX14+OBV/EMA20 composite Raw Health Score out of 30. Score >=20 produces research qualification. The integrated 1,200-row replay achieved exact parity with the independently validated V1 evidence. Aroon/opening, ETF and inherited V4-V7 score logic are not included. Report: `docs/V8_BASIC_HEALTH_SCORE_IMPLEMENTATION_2026-07-13.md`.
 
+MACD comparison closure, 2026-07-13: MACD 12/26/9 and 8/21/5 were replayed on 100 stocks and 12 dates with unchanged DMI and Health Score, using D+1/D+3 false positives as the priority. The 2,400-row run passed independent validation. MACD 12/26/9 produced lower false-positive rates overall and materially better technology precision; 8/21/5 did not solve industrial D+1. Retain 12/26/9 and proceed to industrial sector-context research. Report: `docs/V8_MACD_FOUNDATION_COMPARISON_2026-07-13.md`.
+
 ## Start Here
 
 Read in this order:
@@ -34,17 +36,18 @@ Read in this order:
 2. `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md`
 3. `docs/V8_BASIC_HEALTH_SCORE_IMPLEMENTATION_2026-07-13.md`
 4. `docs/V8_COMPOSITE_SCORE_EXPANDED_BACKTEST_2026-07-13.md`
-5. `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`
-6. `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`
-7. `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`
-8. `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md` for historical checkpoint behavior
-9. `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md` for historical checkpoint behavior
-10. `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md` for historical placeholder behavior
-11. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
-12. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
-13. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for legacy comparator behavior only
-14. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
-15. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
+5. `docs/V8_MACD_FOUNDATION_COMPARISON_2026-07-13.md`
+6. `docs/V8_V1_V3_INDICATOR_BASELINE_BACKTEST_2026-07-13.md`
+7. `docs/V1_V7_INDICATOR_VALUE_AUDIT_2026-07-13.md`
+8. `docs/V8_BASIC_ENGINE_REBUILD_CHECKPOINT_2026-07-13.md`
+9. `docs/V8_BASIC_FOUNDATION_IMPLEMENTATION_2026-07-13.md` for historical checkpoint behavior
+10. `docs/V8_CALCULATION_ONLY_INDICATORS_IMPLEMENTATION_2026-07-13.md` for historical checkpoint behavior
+11. `docs/V8_RSI_BASE_LAYER_IMPLEMENTATION_2026-07-13.md` for historical placeholder behavior
+12. `docs/V8_EXPERIMENT_ANALYSIS_BRIEF_2026-07-13.md`
+13. `docs/V8_FOUNDATION_VALIDATION_CONCLUSION_2026-07-12.md`
+14. `docs/V8_CURRENT_OUTPUT_CONTRACT_2026-07-10.md` for legacy comparator behavior only
+15. `docs/V1_V8_EMA200_MACD_FOUNDATION_DISCOVERY_2026-07-12.md`
+16. `docs/V8_COMPREHENSIVE_BACKTEST_PLAN_2026-07-12.md`
 
 ## Legacy Comparator Behavior
 

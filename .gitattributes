@@ -10,3 +10,4 @@ backtests/V8_RSI_Base/** -text
 backtests/V8_V1_V3_Indicator_Baseline/runs/** -text
 backtests/V8_V1_V3_Composite_Score_Expanded/runs/** -text
 backtests/V8_Basic_Health_Score/runs/** -text
+backtests/V8_MACD_Foundation_Comparison_Expanded/runs/** -text

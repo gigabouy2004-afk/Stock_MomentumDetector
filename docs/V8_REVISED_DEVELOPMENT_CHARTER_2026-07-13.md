@@ -24,6 +24,8 @@ Expanded composite-Score replay, 2026-07-13: the controlling interpretation is t
 
 User-approved Health Score integration, 2026-07-13: the rebuilt `Momentum_Detector_V8_Basic.py` now implements the tested sequence EMA200+MACD12/26/9 Foundation -> DMI14 eligibility -> combined RSI14/ADX14/OBV-EMA20 points -> Raw Health Score out of 30 -> research qualification at 20. A 1,200-row integrated replay matched the independently validated V1 reference without any formula, point, total, qualification or outcome difference. Aroon, opening structure, ETF and the inherited V4-V7 score are excluded. This is approved research authority, not operational promotion. Report: `docs/V8_BASIC_HEALTH_SCORE_IMPLEMENTATION_2026-07-13.md`.
 
+Dual-MACD decision, 2026-07-13: before sector branching, MACD 12/26/9 and 8/21/5 were compared on the same 100 stocks, 12 dates and unchanged Health Score using D+1/D+3 false-positive priority. At full qualification, 12/26/9 had lower overall false-positive rates (39.08% vs 44.16% D+1; 36.78% vs 38.96% D+3). In technology the advantage was larger (28.57% vs 38.24% D+1; 28.57% vs 35.29% D+3). Industrial D+1 remained near 49% false positives under both settings. MACD 12/26/9 remains the baseline; 8/21/5 is rejected as its replacement. Report: `docs/V8_MACD_FOUNDATION_COMPARISON_2026-07-13.md`.
+
 Companion standard: `docs/MOMENTUM_ENGINE_FOUNDATIONAL_DESIGN_STANDARD_2026-07-13.md` defines what is carried forward, rejected, research-only, and required to pass backtesting before entering an operational decision path.
 
 ## 1. Mission
